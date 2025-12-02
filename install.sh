@@ -3,6 +3,7 @@
 # configuration
 BOOT_SIZE="512M"
 SWAP_SIZE="2G"
+USERNAME="kyle"
 
 # logging
 log() { echo "$(date '+%H:%M:%S') $*" | tee -a /var/log/install.log; }
@@ -64,7 +65,7 @@ fi
 # (needs to run before 2.1)
 if ! arch-chroot /mnt pacman -Q base linux linux-firmware &>/dev/null; then
   log "installing essential packages"
-  pacstrap /mnt base linux linux-firmware
+  pacstrap /mnt base linux linux-firmware sudo
 fi
 
 # 2.1 Select the mirrors
@@ -78,7 +79,7 @@ if ! arch-chroot /mnt pacman -Q reflector &>/dev/null; then
 fi
 
 # configure reflector
-if ! (grep -q "--latest 10" "$REFLECTOR_CONF_PATH" && grep -q "--sort rate" "$REFLECTOR_CONF_PATH"); then
+if ! (grep -q -- "--latest 10" "$REFLECTOR_CONF_PATH" && grep -q -- "--sort rate" "$REFLECTOR_CONF_PATH"); then
   log "configuring reflector"
   sed -i "s/--latest .*/--latest 10/g" "$REFLECTOR_CONF_PATH"
   sed -i "s/--sort .*/--sort rate/g" "$REFLECTOR_CONF_PATH"
@@ -168,3 +169,112 @@ fi
 
 # 4. Reboot
 # (skip reboot - continuing with post-installation)
+
+# 5. Post-installation
+
+# 5.1 user setup
+
+# create user and configure sudo
+if ! arch-chroot /mnt id "$USERNAME" &>/dev/null; then
+  log "creating user $USERNAME"
+  arch-chroot /mnt useradd -m -G wheel "$USERNAME"
+  restart
+fi
+
+if arch-chroot /mnt passwd -S "$USERNAME" | grep -q " NP "; then
+  log "setting password for $USERNAME"
+  arch-chroot /mnt passwd "$USERNAME"
+fi
+
+if ! grep -q "%wheel ALL=(ALL:ALL) ALL" /mnt/etc/sudoers; then
+  log "allowing sudo for wheel group users"
+  arch-chroot /mnt sed -i "s/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/" /etc/sudoers
+fi
+
+if ! grep -q "$USERNAME ALL=(ALL) NOPASSWD: ALL" /mnt/etc/sudoers.d/temp_install; then
+  log "configuring temporary passwordless sudo for $USERNAME"
+  arch-chroot /mnt bash -c "echo '$USERNAME ALL=(ALL) NOPASSWD: ALL' >/etc/sudoers.d/temp_install"
+  restart
+fi
+
+if [[ $(arch-chroot /mnt stat -c "%a" /etc/sudoers.d/temp_install) != "440" ]]; then
+  log "setting file permissions for temporary passwordless sudo"
+  arch-chroot /mnt chmod 440 /etc/sudoers.d/temp_install
+fi
+
+# install oh-my-zsh and configure shell
+if ! arch-chroot /mnt pacman -Q zsh &>/dev/null; then
+  log "installing zsh"
+  arch-chroot /mnt pacman -S --noconfirm zsh
+  restart
+fi
+
+if ! grep "^$USERNAME:" /mnt/etc/passwd | grep -q "/mnt/usr/bin/zsh"; then
+  log "setting zsh as default shell for $USERNAME"
+  arch-chroot /mnt chsh -s /usr/bin/zsh "$USERNAME"
+fi
+
+if [[ ! -d "/mnt/home/$USERNAME/.oh-my-zsh" ]]; then
+  log "installing oh-my-zsh"
+  arch-chroot /mnt sudo -u "$USERNAME" bash -c "curl -L https://install.ohmyz.sh | sh"
+fi
+
+# install pulse audio and configure service
+if ! arch-chroot /mnt pacman -Q pulseaudio &>/dev/null; then
+  log "installing pulseaudio"
+  arch-chroot /mnt pacman -S --noconfirm pulseaudio
+fi
+
+if [[ ! -d "/mnt/home/$USERNAME/.config/systemd/user/default.target.wants" ]]; then
+  log "creating pulseaudio systemd directory"
+  arch-chroot /mnt mkdir -p "/home/$USERNAME/.config/systemd/user/default.target.wants"
+  restart
+fi
+
+SYMLINK="/home/$USERNAME/.config/systemd/user/default.target.wants/pulseaudio.service"
+TARGET="/usr/lib/systemd/user/pulseaudio.service"
+if [[ $(arch-chroot /mnt readlink "$SYMLINK" 2>/dev/null) != "$TARGET" ]]; then
+  log "enabling pulseaudio user service"
+  arch-chroot /mnt ln -sf "$TARGET" "$SYMLINK"
+fi
+
+if find "/mnt/home/$USERNAME/.config" ! -user "$USERNAME" -o ! -group "$USERNAME" | grep -q .; then
+  log "setting .config/ directory ownership"
+  arch-chroot /mnt chown -R "$USERNAME:$USERNAME" "/home/$USERNAME/.config"
+fi
+
+# install Arch User Repository helper (yay)
+if ! arch-chroot /mnt pacman -Q base-devel &>/dev/null; then
+  log "installing base-devel"
+  arch-chroot /mnt pacman -S --noconfirm base-devel
+  restart
+fi
+
+if ! arch-chroot /mnt pacman -Q git &>/dev/null; then
+  log "installing git"
+  arch-chroot /mnt pacman -S --noconfirm git
+  restart
+fi
+
+if [[ ! -d /mnt/opt/yay/.git ]]; then
+  log "cloning yay"
+  arch-chroot /mnt git clone https://aur.archlinux.org/yay.git /opt/yay
+  restart
+fi
+
+if find /mnt/opt/yay ! -user "$USERNAME" -o ! -group "$USERNAME" | grep -q .; then
+  log "setting yay directory ownership"
+  arch-chroot /mnt chown -R "$USERNAME:$USERNAME" /opt/yay
+fi
+
+if ! arch-chroot /mnt which yay &>/dev/null; then
+  log "building and installing yay"
+  arch-chroot /mnt sudo -u "$USERNAME" makepkg -si -D /opt/yay --noconfirm
+fi
+
+# rest of installation
+
+if [[ -f /mnt/etc/sudoers.d/temp_install ]]; then
+  log "deleting temporary file for passwordless sudo"
+  rm /mnt/etc/sudoers.d/temp_install
+fi
