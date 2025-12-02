@@ -1,12 +1,10 @@
 #!/bin/bash
 
 # configuration
-
 BOOT_SIZE="512M"
 SWAP_SIZE="2G"
 
 # logging
-
 log() { echo "$(date '+%H:%M:%S') $*" | tee -a /var/log/install.log; }
 
 # redirect ouput to verbose log file
@@ -14,6 +12,11 @@ exec 1> >(tee -a /var/log/install-debug.log)
 exec 2> >(tee -a /var/log/install-debug.log >&2)
 
 restart() { log "restarting install script" && exec "$0"; }
+
+if ! (grep -q "^\[multilib\]" /etc/pacman.conf && grep -q "^Include = /etc/pacman.d/mirrorlist" /etc/pacman.conf); then
+  log "enabling 32-bit libraries"
+  sed -i '/^#\[multilib\]/,/^#Include/ {s/^#//; }' /etc/pacman.conf
+fi
 
 if [[ ! -f /var/lib/pacman/sync/core.db ]]; then
   log "initializing pacman"
@@ -98,7 +101,7 @@ if [[ ! -s /mnt/etc/fstab ]]; then
 fi
 
 # 3.2 Chroot
-# installation runs from live environment
+# (installation runs from live environment)
 
 # 3.3 Time
 TIME_ZONE="/usr/share/zoneinfo/America/Denver"
@@ -137,7 +140,7 @@ if [[ "$(cat /mnt/etc/hostname 2>/dev/null)" != "$HOSTNAME" ]]; then
 fi
 
 # 3.6 Initramfs
-# usually not required
+# (usually not required)
 
 # 3.7 Root password
 if ! arch-chroot /mnt passwd -S root | grep -q " P "; then
@@ -162,3 +165,6 @@ if [[ ! -f /mnt/boot/grub/grub.cfg ]]; then
   log "configuring GRUB bootloader"
   arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
 fi
+
+# 4. Reboot
+# (skip reboot - continuing with post-installation)
