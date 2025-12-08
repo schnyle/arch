@@ -9,8 +9,11 @@ USERNAME="kyle"
 log() { echo "$(date '+%H:%M:%S') $*" | tee -a /var/log/install.log; }
 
 # redirect ouput to verbose log file
-exec 1> >(tee -a /var/log/install-debug.log)
-exec 2> >(tee -a /var/log/install-debug.log >&2)
+if [[ -z "$LOGGING_SETUP" ]]; then
+  exec 1> >(tee -a /var/log/install-debug.log)
+  exec 2>&1
+  export LOGGING_SETUP=1
+fi
 
 restart() { log "restarting install script" && exec "$0"; }
 
