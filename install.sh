@@ -207,29 +207,24 @@ if arch-chroot /mnt passwd -S "$USERNAME" | grep -q " NP "; then
   changed
 fi
 
-if ! grep -q "%wheel ALL=(ALL:ALL) ALL" /mnt/etc/sudoers; then
+if ! grep -q "^%wheel ALL=(ALL:ALL) ALL" /mnt/etc/sudoers; then
   log "allowing sudo for wheel group users"
   arch-chroot /mnt sed -i "s/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/" /etc/sudoers
   changed
 fi
 
-TEMP_INSTALL_FILE="/etc/sudoers.d/temp_install"
-if [[ ! -f "/mnt$TEMP_INSTALL_FILE" ]]; then
-  log "creating $TEMP_INSTALL_FILE"
-  arch-chroot /mnt touch "$TEMP_INSTALL_FILE"
-  changed
-fi
-
-if ! grep -q "$USERNAME ALL=(ALL) NOPASSWD: ALL" "/mnt$TEMP_INSTALL_FILE"; then
-  log "configuring temporary passwordless sudo for $USERNAME"
-  arch-chroot /mnt bash -c "echo '$USERNAME ALL=(ALL) NOPASSWD: ALL' >$TEMP_INSTALL_FILE"
+TEMP_SUDOERSD_FILE="/etc/sudoers.d/temp_install"
+if ! arch-chroot /mnt test -f "$TEMP_SUDOERSD_FILE" || [[ $(arch-chroot /mnt stat -c "%a" "$TEMP_SUDOERSD_FILE") != "666" ]]; then
+  log "creating $TEMP_SUDOERSD_FILE"
+  touch "/mnt$TEMP_SUDOERSD_FILE"
+  chmod 666 "/mnt$TEMP_SUDOERSD_FILE"
   restartnow
 fi
 
-if [[ $(arch-chroot /mnt stat -c "%a" "$TEMP_INSTALL_FILE") != "440" ]]; then
-  log "setting file permissions for temporary passwordless sudo"
-  arch-chroot /mnt chmod 440 "$TEMP_INSTALL_FILE"
-  changed
+if ! grep -q "$USERNAME ALL=(ALL) NOPASSWD: ALL" "/mnt$TEMP_SUDOERSD_FILE"; then
+  log "configuring temporary passwordless sudo for $USERNAME"
+  arch-chroot /mnt bash -c "echo '$USERNAME ALL=(ALL) NOPASSWD: ALL' >$TEMP_SUDOERSD_FILE"
+  restartnow
 fi
 
 # install oh-my-zsh and configure shell
@@ -245,7 +240,7 @@ if ! arch-chroot /mnt pacman -Q git &>/dev/null; then
   restartnow
 fi
 
-if ! grep "^$USERNAME:" /mnt/etc/passwd | grep -q "/mnt/usr/bin/zsh"; then
+if ! grep "^$USERNAME:" /mnt/etc/passwd | grep -q "/usr/bin/zsh"; then
   log "setting zsh as default shell for $USERNAME"
   arch-chroot /mnt chsh -s /usr/bin/zsh "$USERNAME"
   changed
@@ -311,15 +306,15 @@ fi
 
 # rest of installation
 
-if [[ -f /mnt/etc/sudoers.d/temp_install ]]; then
-  log "deleting temporary file for passwordless sudo"
-  rm /mnt/etc/sudoers.d/temp_install
-  changed
-fi
-
 if [[ "$CHANGES" -gt 0 ]]; then
   log "restarting to verify $CHANGES changes"
   exec "$0"
+fi
+
+log "deleting temporary file for passwordless sudo"
+rm /mnt/etc/sudoers.d/temp_install
+if [[ -f "/mnt$TEMP_SUDOERSD_FILE" ]]; then
+  log "ERROR: file $TEMP_SUDOERSD_FILE exists, please delete"
 fi
 
 log "installation completed successfully"
