@@ -194,15 +194,21 @@ if ! grep -q "%wheel ALL=(ALL:ALL) ALL" /mnt/etc/sudoers; then
   arch-chroot /mnt sed -i "s/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/" /etc/sudoers
 fi
 
-if ! grep -q "$USERNAME ALL=(ALL) NOPASSWD: ALL" /mnt/etc/sudoers.d/temp_install; then
+TEMP_INSTALL_FILE="/etc/sudoers.d/temp_install"
+if [[ ! -f "/mnt$TEMP_INSTALL_FILE" ]]; then
+  log "creating $TEMP_INSTALL_FILE"
+  arch-chroot /mnt touch "$TEMP_INSTALL_FILE"
+fi
+
+if ! grep -q "$USERNAME ALL=(ALL) NOPASSWD: ALL" "/mnt$TEMP_INSTALL_FILE"; then
   log "configuring temporary passwordless sudo for $USERNAME"
-  arch-chroot /mnt bash -c "echo '$USERNAME ALL=(ALL) NOPASSWD: ALL' >/etc/sudoers.d/temp_install"
+  arch-chroot /mnt bash -c "echo '$USERNAME ALL=(ALL) NOPASSWD: ALL' >$TEMP_INSTALL_FILE"
   restart
 fi
 
-if [[ $(arch-chroot /mnt stat -c "%a" /etc/sudoers.d/temp_install) != "440" ]]; then
+if [[ $(arch-chroot /mnt stat -c "%a" "$TEMP_INSTALL_FILE") != "440" ]]; then
   log "setting file permissions for temporary passwordless sudo"
-  arch-chroot /mnt chmod 440 /etc/sudoers.d/temp_install
+  arch-chroot /mnt chmod 440 "$TEMP_INSTALL_FILE"
 fi
 
 # install oh-my-zsh and configure shell
