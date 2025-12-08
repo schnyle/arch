@@ -253,7 +253,7 @@ if [[ $(arch-chroot /mnt readlink "$SYMLINK" 2>/dev/null) != "$TARGET" ]]; then
   arch-chroot /mnt ln -sf "$TARGET" "$SYMLINK"
 fi
 
-if find "/mnt/home/$USERNAME/.config" ! -user "$USERNAME" -o ! -group "$USERNAME" | grep -q .; then
+if arch-chroot /mnt find "/home/$USERNAME/.config" ! -user "$USERNAME" -o ! -group "$USERNAME" | grep -q .; then
   log "setting .config/ directory ownership"
   arch-chroot /mnt chown -R "$USERNAME:$USERNAME" "/home/$USERNAME/.config"
 fi
@@ -271,7 +271,7 @@ if [[ ! -d /mnt/opt/yay/.git ]]; then
   restart
 fi
 
-if find /mnt/opt/yay ! -user "$USERNAME" -o ! -group "$USERNAME" | grep -q .; then
+if arch-chroot /mnt find /opt/yay ! -user "$USERNAME" -o ! -group "$USERNAME" | grep -q .; then
   log "setting yay directory ownership"
   arch-chroot /mnt chown -R "$USERNAME:$USERNAME" /opt/yay
 fi
