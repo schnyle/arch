@@ -212,6 +212,12 @@ if ! arch-chroot /mnt pacman -Q zsh &>/dev/null; then
   restart
 fi
 
+if ! arch-chroot /mnt pacman -Q git &>/dev/null; then
+  log "installing git"
+  arch-chroot /mnt pacman -S --noconfirm git
+  restart
+fi
+
 if ! grep "^$USERNAME:" /mnt/etc/passwd | grep -q "/mnt/usr/bin/zsh"; then
   log "setting zsh as default shell for $USERNAME"
   arch-chroot /mnt chsh -s /usr/bin/zsh "$USERNAME"
@@ -250,12 +256,6 @@ fi
 if ! arch-chroot /mnt pacman -Q base-devel &>/dev/null; then
   log "installing base-devel"
   arch-chroot /mnt pacman -S --noconfirm base-devel
-  restart
-fi
-
-if ! arch-chroot /mnt pacman -Q git &>/dev/null; then
-  log "installing git"
-  arch-chroot /mnt pacman -S --noconfirm git
   restart
 fi
 
