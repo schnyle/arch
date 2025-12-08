@@ -15,19 +15,22 @@ if [[ -z "$LOGGING_SETUP" ]]; then
   export LOGGING_SETUP=1
 fi
 
-restart() { log "restarting install script" && exec "$0"; }
+restartnow() { log "restarting install script" && exec "$0"; }
 
 if ! (grep -q "^\[multilib\]" /etc/pacman.conf && grep -q "^Include = /etc/pacman.d/mirrorlist" /etc/pacman.conf); then
   log "enabling 32-bit libraries"
   sed -i '/^#\[multilib\]/,/^#Include/ {s/^#//; }' /etc/pacman.conf
 fi
 
+CHANGES=0
+changed() { ((CHANGES++)); }
+
 if [[ ! -f /var/lib/pacman/sync/core.db ]]; then
   log "initializing pacman"
   pacman-key --init
   pacman-key --populate archlinux
   pacman -Sy --noconfirm
-  restart
+  restartnow
 fi
 
 # 1. Pre-installation
@@ -36,6 +39,7 @@ fi
 if ! timedatectl | grep -q "System clock synchronized: yes"; then
   log "updating system clock"
   timedatectl
+  changed
 fi
 
 if ! mountpoint -q /mnt; then
@@ -60,6 +64,7 @@ EOF
   # 1.11 Mount the file systems
   mount /dev/vda3 /mnt
   mount --mkdir /dev/vda1 /mnt/boot
+  changed
 fi
 
 # 2. Installation
@@ -69,6 +74,7 @@ fi
 if ! arch-chroot /mnt pacman -Q base linux linux-firmware &>/dev/null; then
   log "installing essential packages"
   pacstrap /mnt base linux linux-firmware sudo
+  changed
 fi
 
 # 2.1 Select the mirrors
@@ -78,7 +84,8 @@ REFLECTOR_CONF_PATH="/mnt/etc/xdg/reflector/reflector.conf"
 if ! arch-chroot /mnt pacman -Q reflector &>/dev/null; then
   log "installing reflector"
   arch-chroot /mnt pacman -S --noconfirm reflector
-  restart
+  restartnow
+  changed
 fi
 
 # configure reflector
@@ -87,12 +94,14 @@ if ! (grep -q -- "--latest 10" "$REFLECTOR_CONF_PATH" && grep -q -- "--sort rate
   sed -i "s/--latest .*/--latest 10/g" "$REFLECTOR_CONF_PATH"
   sed -i "s/--sort .*/--sort rate/g" "$REFLECTOR_CONF_PATH"
   arch-chroot /mnt systemctl start reflector.service
+  changed
 fi
 
 # enable timer
 if ! arch-chroot /mnt systemctl is-enabled reflector.timer &>/dev/null; then
   log "enabling reflector.timer daemon"
   arch-chroot /mnt systemctl enable reflector.timer
+  changed
 fi
 
 # 3. Configure the system
@@ -101,7 +110,7 @@ fi
 if [[ ! -s /mnt/etc/fstab ]]; then
   log "generating fstab file"
   genfstab -U /mnt >>/mnt/etc/fstab
-  restart
+  restartnow
 fi
 
 # 3.2 Chroot
@@ -112,6 +121,7 @@ TIME_ZONE="/usr/share/zoneinfo/America/Denver"
 if [[ $(readlink /mnt/etc/localtime) != "$TIME_ZONE" ]]; then
   log "setting the time zone"
   arch-chroot /mnt ln -sf "$TIME_ZONE" /etc/localtime
+  changed
 fi
 
 arch-chroot /mnt hwclock --systohc || log "[WARNING] failed to set the hardware clock"
@@ -122,18 +132,21 @@ arch-chroot /mnt hwclock --systohc || log "[WARNING] failed to set the hardware 
 if ! grep -q "^en_US.UTF-8 UTF-8" /mnt/etc/locale.gen; then
   log "specifying locale"
   arch-chroot /mnt sed -i "s/^#en_US.UTF-8/en_US.UTF-8/g" /etc/locale.gen
+  changed
 fi
 
 # generate locales
 if ! arch-chroot /mnt locale -a | grep -q "en_US.utf8"; then
   log "generating locales"
   arch-chroot /mnt locale-gen
+  changed
 fi
 
 # create locale.conf and set LANG
 if [[ "$(cat /mnt/etc/locale.conf 2>/dev/null)" != "LANG=en_US.UTF-8" ]]; then
   log "creating locale.conf and setting LANG"
   echo "LANG=en_US.UTF-8" >/mnt/etc/locale.conf
+  changed
 fi
 
 # 3.5 Network configuration
@@ -141,6 +154,7 @@ HOSTNAME="arch-$(date '+%Y%m%d')"
 if [[ "$(cat /mnt/etc/hostname 2>/dev/null)" != "$HOSTNAME" ]]; then
   log "setting hostname to $HOSTNAME"
   echo "$HOSTNAME" >/mnt/etc/hostname
+  changed
 fi
 
 # 3.6 Initramfs
@@ -150,6 +164,7 @@ fi
 if ! arch-chroot /mnt passwd -S root | grep -q " P "; then
   log "setting root password"
   arch-chroot /mnt bash -c "passwd"
+  changed
 fi
 
 # 3.8 Boot loader
@@ -157,17 +172,19 @@ fi
 if ! arch-chroot /mnt pacman -Q grub efibootmgr os-prober &>/dev/null; then
   log "installing bootloader packages"
   arch-chroot /mnt pacman -S --noconfirm grub efibootmgr os-prober
-  restart
+  restartnow
 fi
 
 if [[ ! -f /mnt/boot/EFI/GRUB/grubx64.efi ]]; then
   log "installing GRUB bootloader"
   arch-chroot /mnt grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB
+  changed
 fi
 
 if [[ ! -f /mnt/boot/grub/grub.cfg ]]; then
   log "configuring GRUB bootloader"
   arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
+  changed
 fi
 
 # 4. Reboot
@@ -181,69 +198,76 @@ fi
 if ! arch-chroot /mnt id "$USERNAME" &>/dev/null; then
   log "creating user $USERNAME"
   arch-chroot /mnt useradd -m -G wheel "$USERNAME"
-  restart
+  restartnow
 fi
 
 if arch-chroot /mnt passwd -S "$USERNAME" | grep -q " NP "; then
   log "setting password for $USERNAME"
   arch-chroot /mnt passwd "$USERNAME"
+  changed
 fi
 
 if ! grep -q "%wheel ALL=(ALL:ALL) ALL" /mnt/etc/sudoers; then
   log "allowing sudo for wheel group users"
   arch-chroot /mnt sed -i "s/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/" /etc/sudoers
+  changed
 fi
 
 TEMP_INSTALL_FILE="/etc/sudoers.d/temp_install"
 if [[ ! -f "/mnt$TEMP_INSTALL_FILE" ]]; then
   log "creating $TEMP_INSTALL_FILE"
   arch-chroot /mnt touch "$TEMP_INSTALL_FILE"
+  changed
 fi
 
 if ! grep -q "$USERNAME ALL=(ALL) NOPASSWD: ALL" "/mnt$TEMP_INSTALL_FILE"; then
   log "configuring temporary passwordless sudo for $USERNAME"
   arch-chroot /mnt bash -c "echo '$USERNAME ALL=(ALL) NOPASSWD: ALL' >$TEMP_INSTALL_FILE"
-  restart
+  restartnow
 fi
 
 if [[ $(arch-chroot /mnt stat -c "%a" "$TEMP_INSTALL_FILE") != "440" ]]; then
   log "setting file permissions for temporary passwordless sudo"
   arch-chroot /mnt chmod 440 "$TEMP_INSTALL_FILE"
+  changed
 fi
 
 # install oh-my-zsh and configure shell
 if ! arch-chroot /mnt pacman -Q zsh &>/dev/null; then
   log "installing zsh"
   arch-chroot /mnt pacman -S --noconfirm zsh
-  restart
+  restartnow
 fi
 
 if ! arch-chroot /mnt pacman -Q git &>/dev/null; then
   log "installing git"
   arch-chroot /mnt pacman -S --noconfirm git
-  restart
+  restartnow
 fi
 
 if ! grep "^$USERNAME:" /mnt/etc/passwd | grep -q "/mnt/usr/bin/zsh"; then
   log "setting zsh as default shell for $USERNAME"
   arch-chroot /mnt chsh -s /usr/bin/zsh "$USERNAME"
+  changed
 fi
 
 if [[ ! -d "/mnt/home/$USERNAME/.oh-my-zsh" ]]; then
   log "installing oh-my-zsh"
   arch-chroot /mnt sudo -u "$USERNAME" bash -c "curl -L https://install.ohmyz.sh | sh"
+  changed
 fi
 
 # install pulse audio and configure service
 if ! arch-chroot /mnt pacman -Q pulseaudio &>/dev/null; then
   log "installing pulseaudio"
   arch-chroot /mnt pacman -S --noconfirm pulseaudio
+  changed
 fi
 
 if [[ ! -d "/mnt/home/$USERNAME/.config/systemd/user/default.target.wants" ]]; then
   log "creating pulseaudio systemd directory"
   arch-chroot /mnt mkdir -p "/home/$USERNAME/.config/systemd/user/default.target.wants"
-  restart
+  restartnow
 fi
 
 SYMLINK="/home/$USERNAME/.config/systemd/user/default.target.wants/pulseaudio.service"
@@ -251,34 +275,38 @@ TARGET="/usr/lib/systemd/user/pulseaudio.service"
 if [[ $(arch-chroot /mnt readlink "$SYMLINK" 2>/dev/null) != "$TARGET" ]]; then
   log "enabling pulseaudio user service"
   arch-chroot /mnt ln -sf "$TARGET" "$SYMLINK"
+  changed
 fi
 
 if arch-chroot /mnt find "/home/$USERNAME/.config" ! -user "$USERNAME" -o ! -group "$USERNAME" | grep -q .; then
   log "setting .config/ directory ownership"
   arch-chroot /mnt chown -R "$USERNAME:$USERNAME" "/home/$USERNAME/.config"
+  changed
 fi
 
 # install Arch User Repository helper (yay)
 if ! arch-chroot /mnt pacman -Q base-devel &>/dev/null; then
   log "installing base-devel"
   arch-chroot /mnt pacman -S --noconfirm base-devel
-  restart
+  restartnow
 fi
 
 if [[ ! -d /mnt/opt/yay/.git ]]; then
   log "cloning yay"
   arch-chroot /mnt git clone https://aur.archlinux.org/yay.git /opt/yay
-  restart
+  restartnow
 fi
 
 if arch-chroot /mnt find /opt/yay ! -user "$USERNAME" -o ! -group "$USERNAME" | grep -q .; then
   log "setting yay directory ownership"
   arch-chroot /mnt chown -R "$USERNAME:$USERNAME" /opt/yay
+  changed
 fi
 
 if ! arch-chroot /mnt which yay &>/dev/null; then
   log "building and installing yay"
   arch-chroot /mnt sudo -u "$USERNAME" makepkg -si -D /opt/yay --noconfirm
+  changed
 fi
 
 # rest of installation
@@ -286,4 +314,12 @@ fi
 if [[ -f /mnt/etc/sudoers.d/temp_install ]]; then
   log "deleting temporary file for passwordless sudo"
   rm /mnt/etc/sudoers.d/temp_install
+  changed
 fi
+
+if [[ "$CHANGES" -gt 0 ]]; then
+  log "restarting to verify $CHANGES changes"
+  exec "$0"
+fi
+
+log "installation completed successfully"
