@@ -201,9 +201,9 @@ if ! arch-chroot /mnt id "$USERNAME" &>/dev/null; then
   restartnow
 fi
 
-if arch-chroot /mnt passwd -S "$USERNAME" | grep -q " NP "; then
+if ! arch-chroot /mnt passwd -S "$USERNAME" | grep -q " P "; then
   log "setting password for $USERNAME"
-  arch-chroot /mnt passwd "$USERNAME"
+  arch-chroot /mnt bash -c "passwd '$USERNAME'"
   changed
 fi
 
