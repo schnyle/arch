@@ -304,6 +304,74 @@ if ! arch-chroot /mnt which yay &>/dev/null; then
   changed
 fi
 
+# 5.2 install software
+
+packages=(
+  alacritty      # a cross-platform, GPU-accelerated terminal emulator
+  alsa-utils     # Advanced Linux Sound Architecture - Utilities
+  arandr         # provide a simple visual front end for XRandR 1.2
+  cmake          # a cross-platform open-source make system
+  i3-wm          # improved dynamic tiling window manager
+  i3blocks       # define blocks for your i3bar status line
+  i3lock         # improved screenlocker based upon XCB and PAM
+  i3status       # generates status bar to use with i3bar, dzen2 or xmobar
+  inetutils      # a collection of common network programs
+  less           # a terminal based program for viewing text files
+  man-db         # a utility for reading man pages
+  networkmanager # network connection manager and user application
+  pavucontrol    # PulseAudio volume control
+  qmk            # CLI tool for customzing supported mechanical keyboards
+  qutebrowser    # a keyboard-driven, vim-like browser base on Python and Qt
+  reflector      # a Python 3 module and script to retrieve and filter the latest Pacman mirror list
+  stow           # manage installation of multiple softwares in the same directory tree/
+  tmux           # terminal multiplexer
+  vim            # Vi Improved, a highly configurable, improved version of the vi text editor
+  xorg-server    # Xorg X server
+  xorg-xinit     # X.Org initialisation program
+  openssh        # SSH protocol implementation for remote login, command execution and file transfer
+  xclip          # command line interface to the X11 clipboard
+)
+
+for pkg in "${packages[@]}"; do
+  if ! arch-chroot /mnt pacman -Q "$pkg" &>/dev/null; then
+    log "installing $pkg"
+    arch-chroot /mnt pacman -S --noconfirm "$pkg"
+  fi
+done
+
+# minesweeper
+if ! arch-chroot /mnt test -x /opt/minesweeper/minesweeper; then
+  echo "installing minesweeper"
+  arch-chroot /mnt mkdir -p /opt/minesweeper
+  curl -fL https://github.com/schnyle/minesweeper/releases/latest/download/minesweeper -o /mnt/opt/minesweeper/minesweeper
+  arch-chroot /mnt chmod +x /opt/minesweeper/minesweeper
+fi
+
+# steam
+if ! arch-chroot /mnt pacman -Q steam lib32-nvidia-utils &>/dev/null; then
+  log "installing steam & 32 bit NVIDIA utils"
+  arch-chroot /mnt pacman -S --noconfirm steam lib32-nvidia-utils
+fi
+
+# VS Code
+if ! arch-chroot /mnt command -v code &>/dev/null; then
+  log "installing VS Code"
+  arch-chroot /mnt sudo -u "$USERNAME" yay -S --noconfirm visual-studio-code-bin
+
+  log "installing VS Code extensions"
+  arch-chroot /mnt sudo -u "$USERNAME" code --install-extension ms-vscode.cmake-tools
+  arch-chroot /mnt sudo -u "$USERNAME" code --install-extension ms-vscode.cpptools
+  arch-chroot /mnt sudo -u "$USERNAME" code --install-extension vscode-icons-team.vscode-icons
+  arch-chroot /mnt sudo -u "$USERNAME" code --install-extension tomoki1207.pdf
+  arch-chroot /mnt sudo -u "$USERNAME" code --install-extension mechatroner.rainbow-csv
+fi
+
+# NVIDIA drivers
+if ! arch-chroot /mnt pacman -Q nvidia nvidia-utils nvidia-settings &>/dev/null; then
+  log "installing nvidia drivers"
+  arch-chroot /mnt pacman -S --noconfirm nvidia nvidia-utils nvidia-settings
+fi
+
 # rest of installation
 
 if [[ "$CHANGES" -gt 0 ]]; then
