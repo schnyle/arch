@@ -304,6 +304,19 @@ if ! arch-chroot /mnt which yay &>/dev/null; then
   changed
 fi
 
+# setup custom dotfiles
+if ! arch-chroot /mnt pacman -Q stow &>/dev/null; then
+  log "installing stow"
+  arch-chroot /mnt pacman -S --noconfirm stow
+  restartnow
+fi
+
+if ! arch-chroot /mnt test -d "/home/$USERNAME/.dotfiles"; then
+  log "cloning dotfiles repository"
+  arch-chroot /mnt sudo -u "$USERNAME" git clone https://github.com/schnyle/dotfiles.git "/home/$USERNAME/.dotfiles"
+  arch-chroot /mnt sudo -u "$USERNAME" bash "/home/$USERNAME/.dotfiles/install.sh"
+fi
+
 # 5.2 install software
 
 packages=(
