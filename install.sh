@@ -358,6 +358,13 @@ if ! arch-chroot /mnt test -x /opt/minesweeper/minesweeper; then
   arch-chroot /mnt mkdir -p /opt/minesweeper
   curl -fL https://github.com/schnyle/minesweeper/releases/latest/download/minesweeper -o /mnt/opt/minesweeper/minesweeper
   arch-chroot /mnt chmod +x /opt/minesweeper/minesweeper
+  restartnow
+fi
+
+if [[ $(arch-chroot /mnt readlink "/usr/local/bin/minesweeper" 2>/dev/null) != "/opt/minesweeper/minesweeper" ]]; then
+  log "create symlink for minesweeper"
+  arch-chroot /mnt ln -sf "/opt/minesweeper/minesweeper" "/usr/local/bin/minesweeper"
+  changed
 fi
 
 # steam
