@@ -213,16 +213,10 @@ if ! grep -q "^%wheel ALL=(ALL:ALL) ALL" /mnt/etc/sudoers; then
 fi
 
 TEMP_SUDOERSD_FILE="/etc/sudoers.d/temp_install"
-if ! arch-chroot /mnt test -f "$TEMP_SUDOERSD_FILE" || [[ $(arch-chroot /mnt stat -c "%a" "$TEMP_SUDOERSD_FILE") != "666" ]]; then
-  log "creating $TEMP_SUDOERSD_FILE"
-  touch "/mnt$TEMP_SUDOERSD_FILE"
-  chmod 666 "/mnt$TEMP_SUDOERSD_FILE"
-  restartnow
-fi
-
-if ! grep -q "$USERNAME ALL=(ALL) NOPASSWD: ALL" "/mnt$TEMP_SUDOERSD_FILE"; then
+if ! grep -q "$USERNAME ALL=(ALL) NOPASSWD: ALL" "/mnt$TEMP_SUDOERSD_FILE" &>/dev/null || [[ $(arch-chroot /mnt stat -c "%a" "$TEMP_SUDOERSD_FILE") != "440" ]]; then
   log "configuring temporary passwordless sudo for $USERNAME"
   arch-chroot /mnt bash -c "echo '$USERNAME ALL=(ALL) NOPASSWD: ALL' >$TEMP_SUDOERSD_FILE"
+  arch-chroot /mnt chmod 440 "$TEMP_SUDOERSD_FILE"
   restartnow
 fi
 
