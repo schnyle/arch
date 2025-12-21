@@ -401,9 +401,9 @@ for ext in "${extensions[@]}"; do
 done
 
 # NVIDIA drivers
-if ! arch-chroot /mnt pacman -Q nvidia nvidia-utils nvidia-settings &>/dev/null; then
-  log "installing nvidia drivers"
-  arch-chroot /mnt pacman -S --noconfirm nvidia nvidia-utils nvidia-settings
+if ! arch-chroot /mnt pacman -Q nvidia-dkms nvidia-utils nvidia-settings &>/dev/null; then
+  log "installing nvidia drivers (DKMS)"
+  arch-chroot /mnt pacman -S --noconfirm nvidia-dkms nvidia-utils nvidia-settings
   changed
 fi
 
