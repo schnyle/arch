@@ -5,12 +5,16 @@ BOOT_SIZE="512M"
 SWAP_SIZE="2G"
 USERNAME="kyle"
 
+LOG_FILE="/var/log/install.log"
+DEBUG_LOG_FILE="/var/log/install-debug.log"
+
 # logging
-log() { echo "$(date '+%H:%M:%S') $*" | tee -a /var/log/install.log; }
+log() { echo "$(date '+%H:%M:%S') $*" | tee -a $LOG_FILE; }
+log "starting Arch installation"
 
 # redirect ouput to verbose log file
 if [[ -z "$LOGGING_SETUP" ]]; then
-  exec 1> >(tee -a /var/log/install-debug.log)
+  exec 1> >(tee -a $DEBUG_LOG_FILE)
   exec 2>&1
   export LOGGING_SETUP=1
 fi
@@ -428,6 +432,14 @@ if [[ $(arch-chroot /mnt readlink /usr/local/bin/displays 2>/dev/null) != /usr/b
 fi
 
 # clean up
+
+# copy log files
+if [[ ! -f "/mnt$LOG_FILE" ]] || [[ ! -f "/mnt$DEBUG_LOG_FILE" ]]; then
+  log "copying log files to target system"
+  cp "$LOG_FILE" "/mnt$LOG_FILE"
+  cp "$DEBUG_LOG_FILE" "/mnt$DEBUG_LOG_FILE"
+  changed
+fi
 
 if [[ "$CHANGES" -gt 0 ]]; then
   log "restarting to verify $CHANGES changes"
