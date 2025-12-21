@@ -327,29 +327,30 @@ if ! (grep -q "^\[multilib\]" /mnt/etc/pacman.conf && grep -q "^Include = /etc/p
 fi
 
 packages=(
-  alacritty      # a cross-platform, GPU-accelerated terminal emulator
-  alsa-utils     # Advanced Linux Sound Architecture - Utilities
-  arandr         # provide a simple visual front end for XRandR 1.2
-  cmake          # a cross-platform open-source make system
-  i3-wm          # improved dynamic tiling window manager
-  i3blocks       # define blocks for your i3bar status line
-  i3lock         # improved screenlocker based upon XCB and PAM
-  i3status       # generates status bar to use with i3bar, dzen2 or xmobar
-  inetutils      # a collection of common network programs
-  less           # a terminal based program for viewing text files
-  man-db         # a utility for reading man pages
-  networkmanager # network connection manager and user application
-  pavucontrol    # PulseAudio volume control
-  qmk            # CLI tool for customzing supported mechanical keyboards
-  qutebrowser    # a keyboard-driven, vim-like browser base on Python and Qt
-  reflector      # a Python 3 module and script to retrieve and filter the latest Pacman mirror list
-  stow           # manage installation of multiple softwares in the same directory tree/
-  tmux           # terminal multiplexer
-  vim            # Vi Improved, a highly configurable, improved version of the vi text editor
-  xorg-server    # Xorg X server
-  xorg-xinit     # X.Org initialisation program
-  openssh        # SSH protocol implementation for remote login, command execution and file transfer
-  xclip          # command line interface to the X11 clipboard
+  adobe-source-code-pro-fonts # Monospaced font family for user interface and coding environments
+  alacritty                   # a cross-platform, GPU-accelerated terminal emulator
+  alsa-utils                  # Advanced Linux Sound Architecture - Utilities
+  arandr                      # provide a simple visual front end for XRandR 1.2
+  cmake                       # a cross-platform open-source make system
+  i3-wm                       # improved dynamic tiling window manager
+  i3blocks                    # define blocks for your i3bar status line
+  i3lock                      # improved screenlocker based upon XCB and PAM
+  i3status                    # generates status bar to use with i3bar, dzen2 or xmobar
+  inetutils                   # a collection of common network programs
+  less                        # a terminal based program for viewing text files
+  man-db                      # a utility for reading man pages
+  networkmanager              # network connection manager and user application
+  pavucontrol                 # PulseAudio volume control
+  qmk                         # CLI tool for customzing supported mechanical keyboards
+  qutebrowser                 # a keyboard-driven, vim-like browser base on Python and Qt
+  reflector                   # a Python 3 module and script to retrieve and filter the latest Pacman mirror list
+  stow                        # manage installation of multiple softwares in the same directory tree/
+  tmux                        # terminal multiplexer
+  vim                         # Vi Improved, a highly configurable, improved version of the vi text editor
+  xorg-server                 # Xorg X server
+  xorg-xinit                  # X.Org initialisation program
+  openssh                     # SSH protocol implementation for remote login, command execution and file transfer
+  xclip                       # command line interface to the X11 clipboard
 )
 
 for pkg in "${packages[@]}"; do
@@ -359,6 +360,13 @@ for pkg in "${packages[@]}"; do
     changed
   fi
 done
+
+# enable NetworkManager service
+if ! arch-chroot /mnt systemctl is-enabled NetworkManager &>/dev/null; then
+  log "enabling NetworkManager service"
+  arch-chroot /mnt systemctl enable NetworkManager
+  changed
+fi
 
 # minesweeper
 if ! arch-chroot /mnt test -x /opt/minesweeper/minesweeper; then
