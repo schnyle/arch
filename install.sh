@@ -451,7 +451,7 @@ fi
 for i in {1..3}; do
   if [[ ! -f "/mnt$TEMP_SUDOERSD_FILE" ]]; then
     break
-  fi  
+  fi
 
   log "removing temporary passwordless sudo file"
   rm "/mnt$TEMP_SUDOERSD_FILE"
@@ -465,4 +465,3 @@ fi
 
 log "installation completed successfully"
 reboot
-

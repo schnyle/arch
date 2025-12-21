@@ -1,3 +1,4 @@
 # TODO
 
-- logging/error-handling/refactor in 5-post-installation.sh
+- add --slim option (no nvidia, no extra software)
+- generalize disk partitioning (currently has /dev/vda hardcoded)
