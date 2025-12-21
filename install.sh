@@ -448,10 +448,21 @@ if [[ "$CHANGES" -gt 0 ]]; then
   exec "$0"
 fi
 
-log "deleting temporary file for passwordless sudo"
-rm /mnt/etc/sudoers.d/temp_install
+for i in {1..3}; do
+  if [[ ! -f "/mnt$TEMP_SUDOERSD_FILE" ]]; then
+    break
+  fi  
+
+  log "removing temporary passwordless sudo file"
+  rm "/mnt$TEMP_SUDOERSD_FILE"
+  sleep 1
+done
+
 if [[ -f "/mnt$TEMP_SUDOERSD_FILE" ]]; then
-  log "ERROR: file $TEMP_SUDOERSD_FILE exists, please delete"
+  log "WARNING: failed to remove $TEMP_SUDOERSD_FILE. Remove manually, then reboot the system."
+  exit
 fi
 
 log "installation completed successfully"
+reboot
+
