@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SCRIPT="bootstrap.sh"
+SCRIPT="install.sh"
 CHECKSUM="${SCRIPT}.sha256"
 
 if git diff --cached --name-only | grep -q "^${SCRIPT}$"; then
@@ -12,4 +12,3 @@ if git diff --cached --name-only | grep -q "^${SCRIPT}$"; then
 
   echo "✓ Checksum updated and staged"
 fi
-
