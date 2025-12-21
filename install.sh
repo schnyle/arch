@@ -361,9 +361,9 @@ if ! arch-chroot /mnt test -x /opt/minesweeper/minesweeper; then
   restartnow
 fi
 
-if [[ $(arch-chroot /mnt readlink "/usr/local/bin/minesweeper" 2>/dev/null) != "/opt/minesweeper/minesweeper" ]]; then
+if [[ $(arch-chroot /mnt readlink /usr/local/bin/minesweeper 2>/dev/null) != /opt/minesweeper/minesweeper ]]; then
   log "create symlink for minesweeper"
-  arch-chroot /mnt ln -sf "/opt/minesweeper/minesweeper" "/usr/local/bin/minesweeper"
+  arch-chroot /mnt ln -sf /opt/minesweeper/minesweeper /usr/local/bin/minesweeper
   changed
 fi
 
@@ -384,15 +384,38 @@ if ! arch-chroot /mnt command -v code &>/dev/null; then
   arch-chroot /mnt sudo -u "$USERNAME" code --install-extension vscode-icons-team.vscode-icons
   arch-chroot /mnt sudo -u "$USERNAME" code --install-extension tomoki1207.pdf
   arch-chroot /mnt sudo -u "$USERNAME" code --install-extension mechatroner.rainbow-csv
+
+  changed
 fi
 
 # NVIDIA drivers
 if ! arch-chroot /mnt pacman -Q nvidia nvidia-utils nvidia-settings &>/dev/null; then
   log "installing nvidia drivers"
   arch-chroot /mnt pacman -S --noconfirm nvidia nvidia-utils nvidia-settings
+  changed
 fi
 
-# rest of installation
+# compositor (bare-metal only)
+if ! arch-chroot /mnt systemd-detect-virt -q && ! arch-chroot /mnt pacman -Q picom &>/dev/null; then
+  log "installing compositor"
+  arch-chroot /mnt pacman -S --noconfirm picom
+  changed
+fi
+
+# symlinks
+if [[ $(arch-chroot /mnt readlink /usr/local/bin/audio 2>/dev/null) != /usr/bin/pavucontrol ]]; then
+  log "creating symlink for pavucontrol"
+  arch-chroot /mnt ln -sf /usr/bin/pavucontrol /usr/local/bin/audio
+  changed
+fi
+
+if [[ $(arch-chroot /mnt readlink /usr/local/bin/displays 2>/dev/null) != /usr/bin/arandr ]]; then
+  log "creating symlink for arandr"
+  arch-chroot /mnt ln -sf /usr/bin/arandr /usr/local/bin/displays
+  changed
+fi
+
+# clean up
 
 if [[ "$CHANGES" -gt 0 ]]; then
   log "restarting to verify $CHANGES changes"
