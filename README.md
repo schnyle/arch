@@ -20,6 +20,7 @@ Run this command from the Arch live environment:
 curl -fsSL https://raw.githubusercontent.com/schnyle/arch/main/install.sh | \
   tee install.sh | \
   sha256sum -c <(curl -fsSL https://raw.githubusercontent.com/schnyle/arch/main/install.sh.sha256) && \
+  chmod +x install.sh && \
   bash install.sh
 ```
 

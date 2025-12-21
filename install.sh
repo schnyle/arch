@@ -19,7 +19,7 @@ if [[ -z "$LOGGING_SETUP" ]]; then
   export LOGGING_SETUP=1
 fi
 
-restartnow() { log "restarting install script" && exec "$0"; }
+restartnow() { log "restarting install script" && exec "$(realpath "$0")"; }
 
 CHANGES=0
 changed() { ((CHANGES++)); }
