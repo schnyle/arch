@@ -17,11 +17,6 @@ fi
 
 restartnow() { log "restarting install script" && exec "$0"; }
 
-if ! (grep -q "^\[multilib\]" /etc/pacman.conf && grep -q "^Include = /etc/pacman.d/mirrorlist" /etc/pacman.conf); then
-  log "enabling 32-bit libraries"
-  sed -i '/^#\[multilib\]/,/^#Include/ {s/^#//; }' /etc/pacman.conf
-fi
-
 CHANGES=0
 changed() { ((CHANGES++)); }
 
@@ -318,6 +313,14 @@ if ! arch-chroot /mnt test -d "/home/$USERNAME/.dotfiles"; then
 fi
 
 # 5.2 install software
+
+# enable 32 bit libraries
+if ! (grep -q "^\[multilib\]" /mnt/etc/pacman.conf && grep -q "^Include = /etc/pacman.d/mirrorlist" /mnt/etc/pacman.conf); then
+  log "enabling 32-bit libraries"
+  sed -i '/^#\[multilib\]/,/^#Include/ {s/^#//; }' /mnt/etc/pacman.conf
+  arch-chroot /mnt pacman -Sy
+  restartnow
+fi
 
 packages=(
   alacritty      # a cross-platform, GPU-accelerated terminal emulator
