@@ -349,6 +349,7 @@ for pkg in "${packages[@]}"; do
   if ! arch-chroot /mnt pacman -Q "$pkg" &>/dev/null; then
     log "installing $pkg"
     arch-chroot /mnt pacman -S --noconfirm "$pkg"
+    changed
   fi
 done
 
@@ -371,22 +372,30 @@ fi
 if ! arch-chroot /mnt pacman -Q steam lib32-nvidia-utils &>/dev/null; then
   log "installing steam & 32 bit NVIDIA utils"
   arch-chroot /mnt pacman -S --noconfirm steam lib32-nvidia-utils
+  changed
 fi
 
 # VS Code
-if ! arch-chroot /mnt command -v code &>/dev/null; then
+if ! arch-chroot /mnt pacman -Q visual-studio-code-bin &>/dev/null; then
   log "installing VS Code"
   arch-chroot /mnt sudo -u "$USERNAME" yay -S --noconfirm visual-studio-code-bin
-
-  log "installing VS Code extensions"
-  arch-chroot /mnt sudo -u "$USERNAME" code --install-extension ms-vscode.cmake-tools
-  arch-chroot /mnt sudo -u "$USERNAME" code --install-extension ms-vscode.cpptools
-  arch-chroot /mnt sudo -u "$USERNAME" code --install-extension vscode-icons-team.vscode-icons
-  arch-chroot /mnt sudo -u "$USERNAME" code --install-extension tomoki1207.pdf
-  arch-chroot /mnt sudo -u "$USERNAME" code --install-extension mechatroner.rainbow-csv
-
-  changed
+  restartnow
 fi
+
+extensions=(
+  ms-vscode.cmake-tools
+  ms-vscode.cpptools
+  vscode-icons-team.vscode-icons
+  tomoki1207.pdf
+  mechatroner.rainbow-csv
+)
+
+for ext in "${extensions[@]}"; do
+  if ! arch-chroot /mnt sudo -u "$USERNAME" code --list-extensions | grep -q "^$ext$"; then
+    arch-chroot /mnt sudo -u "$USERNAME" code --install-extension "$ext"
+    changed
+  fi
+done
 
 # NVIDIA drivers
 if ! arch-chroot /mnt pacman -Q nvidia nvidia-utils nvidia-settings &>/dev/null; then
