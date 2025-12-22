@@ -24,6 +24,11 @@ restartnow() { log "restarting install script" && exec "$(realpath "$0")"; }
 CHANGES=0
 changed() { ((CHANGES++)); }
 
+HAS_NVIDIA=$(
+  lspci | grep -i nvidia
+  echo $?
+)
+
 if [[ ! -f /var/lib/pacman/sync/core.db ]]; then
   log "initializing pacman"
   pacman-key --init
@@ -378,7 +383,7 @@ if [[ $(arch-chroot /mnt readlink /usr/local/bin/minesweeper 2>/dev/null) != /op
 fi
 
 # steam
-if ! arch-chroot /mnt pacman -Q steam lib32-nvidia-utils &>/dev/null; then
+if [[ $HAS_NVIDIA -eq 0 ]] && ! arch-chroot /mnt pacman -Q steam lib32-nvidia-utils &>/dev/null; then
   log "installing steam & 32 bit NVIDIA utils"
   arch-chroot /mnt pacman -S --noconfirm steam lib32-nvidia-utils
   changed
@@ -407,7 +412,7 @@ for ext in "${extensions[@]}"; do
 done
 
 # NVIDIA drivers
-if ! arch-chroot /mnt pacman -Q nvidia-dkms nvidia-utils nvidia-settings &>/dev/null; then
+if [[ $HAS_NVIDIA -eq 0 ]] && ! arch-chroot /mnt pacman -Q nvidia-dkms nvidia-utils nvidia-settings &>/dev/null; then
   log "installing nvidia drivers (DKMS)"
   arch-chroot /mnt pacman -S --noconfirm nvidia-dkms nvidia-utils nvidia-settings
   changed
