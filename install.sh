@@ -10,10 +10,10 @@ DEBUG_LOG_FILE="/var/log/install-debug.log"
 
 # logging
 log() { echo "$(date '+%H:%M:%S') $*" | tee -a $LOG_FILE; }
-log "starting Arch installation"
 
 # redirect ouput to verbose log file
 if [[ -z "$LOGGING_SETUP" ]]; then
+  log "starting Arch installation"
   exec 1> >(tee -a $DEBUG_LOG_FILE)
   exec 2>&1
   export LOGGING_SETUP=1
@@ -31,6 +31,7 @@ HAS_NVIDIA=$(
 
 if [[ ! -f /var/lib/pacman/sync/core.db ]]; then
   log "initializing pacman"
+  pacman -Sy archlinux-keyring --noconfirm
   pacman-key --init
   pacman-key --populate archlinux
   pacman -Sy --noconfirm
