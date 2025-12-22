@@ -46,10 +46,25 @@ if ! timedatectl | grep -q "System clock synchronized: yes"; then
   changed
 fi
 
+# 1.9 Partition the disks
 if ! mountpoint -q /mnt; then
   log "parititoning the disks"
-  # 1.9 Partition the disks
-  sfdisk "/dev/vda" <<EOF
+
+  while true; do
+    echo "available devices:"
+    lsblk -d -o NAME,SIZE,TYPE | grep disk
+    echo
+    read -r -p "enter device name (omit '/dev/'): " device
+
+    if [[ -b "/dev/$device" ]]; then
+      log "selected device: $device"
+      break
+    else
+      echo "device '$device' not found, try again"
+    fi
+  done
+
+  sfdisk "/dev/$device" <<EOF
 label: gpt
 ,$BOOT_SIZE,U
 ,$SWAP_SIZE,S
@@ -57,17 +72,21 @@ label: gpt
 write
 EOF
 
+  if [[ $device =~ nvme ]]; then
+    device="${device}p"
+  fi
+
   log "formatting the partitions"
   # 1.10 Format the partitions
-  mkfs.fat -F32 /dev/vda1
-  mkswap /dev/vda2
-  swapon /dev/vda2
-  mkfs.ext4 /dev/vda3
+  mkfs.fat -F32 "/dev/${device}1"
+  mkswap "/dev/${device}2"
+  swapon "/dev/${device}2"
+  mkfs.ext4 "/dev/${device}3"
 
   log "mounting the file systems"
   # 1.11 Mount the file systems
-  mount /dev/vda3 /mnt
-  mount --mkdir /dev/vda1 /mnt/boot
+  mount "/dev/${device}3" /mnt
+  mount --mkdir "/dev/${device}1" /mnt/boot
   changed
 fi
 
@@ -369,7 +388,7 @@ fi
 
 # minesweeper
 if ! arch-chroot /mnt test -x /opt/minesweeper/minesweeper; then
-  echo "installing minesweeper"
+  log "installing minesweeper"
   arch-chroot /mnt mkdir -p /opt/minesweeper
   curl -fL https://github.com/schnyle/minesweeper/releases/latest/download/minesweeper -o /mnt/opt/minesweeper/minesweeper
   arch-chroot /mnt chmod +x /opt/minesweeper/minesweeper
