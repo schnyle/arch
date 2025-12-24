@@ -358,6 +358,7 @@ packages=(
   inetutils                   # a collection of common network programs
   less                        # a terminal based program for viewing text files
   man-db                      # a utility for reading man pages
+  neovim                      # fork of Vim aiming to improve user experience, plugins, and GUIs
   networkmanager              # network connection manager and user application
   pavucontrol                 # PulseAudio volume control
   qmk                         # CLI tool for customzing supported mechanical keyboards
