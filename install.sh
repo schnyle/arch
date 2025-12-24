@@ -363,6 +363,7 @@ packages=(
   qmk                         # CLI tool for customzing supported mechanical keyboards
   qutebrowser                 # a keyboard-driven, vim-like browser base on Python and Qt
   reflector                   # a Python 3 module and script to retrieve and filter the latest Pacman mirror list
+  sof-firmware                # sound open firmware
   stow                        # manage installation of multiple softwares in the same directory tree/
   tmux                        # terminal multiplexer
   vim                         # Vi Improved, a highly configurable, improved version of the vi text editor
