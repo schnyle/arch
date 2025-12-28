@@ -211,6 +211,13 @@ if [[ ! -f /mnt/boot/grub/grub.cfg ]]; then
   changed
 fi
 
+if [[ ! -f /mnt/boot/EFI/BOOT/BOOTX64.EFI ]]; then
+  log "creating fallback bootloader for picky UEFI implementations"
+  arch-chroot /mnt mkdir -p /boot/EFI/BOOT
+  arch-chroot /mnt cp /boot/EFI/GRUB/grubx64.efi /boot/EFI/BOOT/BOOTX64.EFI
+  changed
+fi
+
 # 4. Reboot
 # (skip reboot - continuing with post-installation)
 
