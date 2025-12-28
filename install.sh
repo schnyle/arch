@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# configuration
+HOSTNAME="atlas"
+
 LOG_FILE="/var/log/install.log"
 DEBUG_LOG_FILE="/var/log/install-debug.log"
 
@@ -24,7 +27,46 @@ restartnow() { log "restarting install script" && exec "$(realpath "$0")"; }
 CHANGES=0
 changed() { ((CHANGES++)); }
 
-# do installation
+ensure_package() {
+  local pkg=$1
+  if ! dpkg -s "$pkg" &>/dev/null; then
+    log "installing $pkg"
+    apt-get install -y "$pkg"
+    changed
+  fi
+}
+
+ensure_service() {
+  local service=$1
+
+  if ! systemctl is-enabled "$service" &>/dev/null; then
+    log "enabling $service"
+    systemctl enable "$service"
+    changed
+  fi
+
+  if ! systemctl is-active "$service"; then
+    log "starting $service"
+    systemctl start "$service"
+    changed
+  fi
+}
+
+# start installation
+
+apt-get update
+
+if [[ "$(hostname)" != "$HOSTNAME" ]]; then
+  log "setting hostname to '$HOSTNAME'"
+  hostnamectl set-hostname "$HOSTNAME"
+  changed
+fi
+
+# ssh
+ensure_package "openssh-server"
+ensure_package "avahi-daemon"
+ensure_service "ssh"
+ensure_service "avahi-daemon"
 
 if [[ $CHANGES -gt 0 ]]; then
   log "restarting to verify $CHANGES changes"
