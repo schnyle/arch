@@ -56,21 +56,37 @@ ensure_service() {
 
 apt-get update
 
+# set hostname
 if [[ "$(hostname)" != "$HOSTNAME" ]]; then
   log "setting hostname to '$HOSTNAME'"
   hostnamectl set-hostname "$HOSTNAME"
   changed
 fi
 
-# ssh
+# ssh & DNS discovery
 ensure_package "openssh-server"
 ensure_package "avahi-daemon"
 ensure_service "ssh"
 ensure_service "avahi-daemon"
 
+# disable sleep states
+sleep_targets=(
+  "sleep.target"
+  "suspend.target"
+  "hibernate.target"
+  "hybrid-sleep.target"
+)
+for target in "${sleep_targets[@]}"; do
+  if [ "$(systemctl is-enabled "$target" 2>/dev/null)" != "masked" ]; then
+    log "masking $target"
+    systemctl mask "$target"
+    changed
+  fi
+done
+
 if [[ $CHANGES -gt 0 ]]; then
   log "restarting to verify $CHANGES changes"
-  exec "$0"
+  exec "$(realpath "$0")"
 fi
 
 log "installation completed successfully"
