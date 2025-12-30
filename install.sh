@@ -84,6 +84,37 @@ for target in "${sleep_targets[@]}"; do
   fi
 done
 
+# firewall setup
+if ! command -v ufw &>/dev/null; then
+  log "installing ufw"
+  apt-get install -y ufw
+  restartnow
+fi
+
+if ! ufw status verbose | grep -q "deny (incoming)"; then
+  log "ufw: setting default deny incoming"
+  ufw default deny incoming
+  changed
+fi
+
+if ! ufw status verbose | grep -q "allow (outgoing)"; then
+  log "ufw: setting default allow outgoing"
+  ufw default allow outgoing
+  changed
+fi
+
+if ! ufw status | grep -q "22/tcp.*ALLOW"; then
+  log "ufw: allowing TCP on port 22"
+  ufw allow 22/tcp
+  changed
+fi
+
+if ! ufw status | grep -q "Status: active"; then
+  log "ufw: enabling firewall"
+  ufw --force enable
+  restartnow
+fi
+
 if [[ $CHANGES -gt 0 ]]; then
   log "restarting to verify $CHANGES changes"
   exec "$(realpath "$0")"
