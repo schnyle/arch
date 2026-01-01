@@ -136,7 +136,7 @@ fi
 # 3. Configure the system
 
 # 3.1 Fstab
-if [[ ! -s /mnt/etc/fstab ]]; then
+if ! grep -q "^UUID=" /mnt/etc/fstab; then
   log "generating fstab file"
   genfstab -U /mnt >>/mnt/etc/fstab
   restartnow
