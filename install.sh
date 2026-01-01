@@ -401,6 +401,19 @@ if ! arch-chroot /mnt systemctl is-enabled NetworkManager &>/dev/null; then
   changed
 fi
 
+# NVIDIA drivers
+if [[ $HAS_NVIDIA -eq 0 ]] && ! arch-chroot /mnt pacman -Q linux-headers &>/dev/null; then
+  log "installing linux headers"
+  arch-chroot /mnt pacman -S --noconfirm linux-headers
+  restartnow
+fi
+
+if [[ $HAS_NVIDIA -eq 0 ]] && ! arch-chroot /mnt pacman -Q nvidia-dkms nvidia-utils nvidia-settings &>/dev/null; then
+  log "installing nvidia drivers (DKMS)"
+  arch-chroot /mnt pacman -S --noconfirm nvidia-dkms nvidia-utils nvidia-settings
+  changed
+fi
+
 # minesweeper
 if ! arch-chroot /mnt test -x /opt/minesweeper/minesweeper; then
   log "installing minesweeper"
@@ -444,13 +457,6 @@ for ext in "${extensions[@]}"; do
     changed
   fi
 done
-
-# NVIDIA drivers
-if [[ $HAS_NVIDIA -eq 0 ]] && ! arch-chroot /mnt pacman -Q nvidia-dkms nvidia-utils nvidia-settings &>/dev/null; then
-  log "installing nvidia drivers (DKMS)"
-  arch-chroot /mnt pacman -S --noconfirm nvidia-dkms nvidia-utils nvidia-settings
-  changed
-fi
 
 # compositor (bare-metal only)
 if ! arch-chroot /mnt systemd-detect-virt -q && ! arch-chroot /mnt pacman -Q picom &>/dev/null; then
