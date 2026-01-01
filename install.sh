@@ -24,6 +24,11 @@ restartnow() { log "restarting install script" && exec "$(realpath "$0")"; }
 CHANGES=0
 changed() { ((CHANGES++)); }
 
+GRUB_BOOTLOADER_EXISTS=$(
+  efibootmgr -v | grep -q "grubx64.efi"
+  echo $?
+)
+
 HAS_NVIDIA=$(
   lspci | grep -i nvidia
   echo $?
@@ -193,25 +198,25 @@ fi
 
 # 3.8 Boot loader
 
-if ! arch-chroot /mnt pacman -Q grub efibootmgr os-prober &>/dev/null; then
+if [[ $GRUB_BOOTLOADER_EXISTS -ne 0 ]] && ! arch-chroot /mnt pacman -Q grub efibootmgr os-prober &>/dev/null; then
   log "installing bootloader packages"
   arch-chroot /mnt pacman -S --noconfirm grub efibootmgr os-prober
   restartnow
 fi
 
-if [[ ! -f /mnt/boot/EFI/GRUB/grubx64.efi ]]; then
+if [[ $GRUB_BOOTLOADER_EXISTS -ne 0 ]] && [[ ! -f /mnt/boot/EFI/GRUB/grubx64.efi ]]; then
   log "installing GRUB bootloader"
   arch-chroot /mnt grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB
   changed
 fi
 
-if [[ ! -f /mnt/boot/grub/grub.cfg ]]; then
+if [[ $GRUB_BOOTLOADER_EXISTS -ne 0 ]] && [[ ! -f /mnt/boot/grub/grub.cfg ]]; then
   log "configuring GRUB bootloader"
   arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
   changed
 fi
 
-if [[ ! -f /mnt/boot/EFI/BOOT/BOOTX64.EFI ]]; then
+if [[ $GRUB_BOOTLOADER_EXISTS -ne 0 ]] && [[ ! -f /mnt/boot/EFI/BOOT/BOOTX64.EFI ]]; then
   log "creating fallback bootloader for picky UEFI implementations"
   arch-chroot /mnt mkdir -p /boot/EFI/BOOT
   arch-chroot /mnt cp /boot/EFI/GRUB/grubx64.efi /boot/EFI/BOOT/BOOTX64.EFI
