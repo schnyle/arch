@@ -465,6 +465,40 @@ if ! arch-chroot /mnt systemd-detect-virt -q && ! arch-chroot /mnt pacman -Q pic
   changed
 fi
 
+# virtual machine
+vm_packages=(
+  qemu-full
+  virt-manager
+  virt-viewer
+  dnsmasq
+  vde2
+  bridge-utils
+  openbsd-netcat
+  dmidecode
+  libguestfs
+  edk2-ovmf
+)
+
+for pkg in "${vm_packages[@]}"; do
+  if ! arch-chroot /mnt pacman -Q "$pkg" &>/dev/null; then
+    log "installing $pkg"
+    arch-chroot /mnt pacman -S --noconfirm "$pkg"
+    changed
+  fi
+done
+
+if ! arch-chroot /mnt systemctl is-enabled libvirtd.socket &>/dev/null; then
+  log "enabling libvirtd.socket"
+  arch-chroot /mnt systemctl enable libvirtd.socket
+  changed
+fi
+
+if ! arch-chroot /mnt groups "$USERNAME" | grep -q libvirt; then
+  log "adding user to libvirt group"
+  arch-chroot /mnt usermod -aG libvirt "$USERNAME"
+  changed
+fi
+
 # symlinks
 if [[ $(arch-chroot /mnt readlink /usr/local/bin/audio 2>/dev/null) != /usr/bin/pavucontrol ]]; then
   log "creating symlink for pavucontrol"
