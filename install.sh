@@ -350,6 +350,45 @@ if ! arch-chroot /mnt ufw status | grep -q "Status: active"; then
   restartnow
 fi
 
+# fail2ban
+if ! arch-chroot /mnt pacman -Q fail2ban &>/dev/null; then
+  log "installing fail2ban"
+  arch-chroot /mnt pacman -S --noconfirm fail2ban
+  restartnow
+fi
+
+if [[ ! -f /mnt/etc/fail2ban/jail.local ]]; then
+  log "fail2ban: creating jail.local config"
+  cat >/mnt/etc/fail2ban/jail.local <<"EOF"
+[DEFAULT]
+# ban for 10 minutes
+bantime = 10m
+
+# check for failures in last 10 minutes
+findtime = 10m
+
+# ban after 5 failures
+maxretry = 5
+
+# use ufw for banning
+banaction = ufw
+
+# use systemd journal instead of log files
+backend = systemd
+
+[sshd]
+enabled = true
+port = 22
+EOF
+  changed
+fi
+
+if ! arch-chroot /mnt systemctl is-enabled fail2ban &>/dev/null; then
+  log "fail2ban: enabling service"
+  arch-chroot /mnt systemctl enable fail2ban
+  changed
+fi
+
 # clean up
 
 # copy log files
