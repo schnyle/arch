@@ -344,6 +344,12 @@ if ! arch-chroot /mnt ufw status verbose | grep -q "22/tcp.*ALLOW"; then
   changed
 fi
 
+if ! arhc-chroot /mnt systemctl is-enabled ufw &>/dev/null; then
+  log "ufw: enabling systemd service"
+  arch-chroot /mnt systemctl enable ufw
+  changed
+fi
+
 if ! arch-chroot /mnt ufw status | grep -q "Status: active"; then
   log "ufw: enabling firewall"
   arch-chroot /mnt ufw --force enable
