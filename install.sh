@@ -30,7 +30,7 @@ GRUB_BOOTLOADER_EXISTS=$(
 )
 
 HAS_NVIDIA=$(
-  lspci | grep -i nvidia
+  lspci | grep -iq "nvidia"
   echo $?
 )
 
