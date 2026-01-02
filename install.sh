@@ -390,6 +390,7 @@ packages=(
   alsa-utils                  # Advanced Linux Sound Architecture - Utilities
   arandr                      # provide a simple visual front end for XRandR 1.2
   cmake                       # a cross-platform open-source make system
+  gnome-themes-extra          # extra GNOME themes (legacy HighContrast icon theme and index files for Adwaita)
   i3-wm                       # improved dynamic tiling window manager
   i3blocks                    # define blocks for your i3bar status line
   i3lock                      # improved screenlocker based upon XCB and PAM
@@ -420,6 +421,29 @@ for pkg in "${packages[@]}"; do
     changed
   fi
 done
+
+# configure dark theme for GTK applications
+read -r -d '' GTK_SETTINGS <<"EOF"
+[Settings]
+gtk-theme-name=Adwaita-dark
+gtk-application-prefer-dark-theme=true
+EOF
+
+GTK3_CONFIG="/mnt/home/$USERNAME/.config/gtk-3.0/settings.ini"
+if [[ "$(cat "$GTK3_CONFIG" 2>/dev/null)" != "$GTK_SETTINGS" ]]; then
+  log "configuring GTK 3.0 dark mode"
+  mkdir -p "/mnt/home/$USERNAME/.config/gtk-3.0"
+  echo "$GTK_SETTINGS" >"$GTK3_CONFIG"
+  changed
+fi
+
+GTK4_CONFIG="/mnt/home/$USERNAME/.config/gtk-4.0/settings.ini"
+if [[ "$(cat "$GTK4_CONFIG" 2>/dev/null)" != "$GTK_SETTINGS" ]]; then
+  log "configuring GTK 4.0 dark mode"
+  mkdir -p "/mnt/home/$USERNAME/.config/gtk-4.0"
+  echo "$GTK_SETTINGS" >"$GTK4_CONFIG"
+  changed
+fi
 
 # enable NetworkManager service
 if ! arch-chroot /mnt systemctl is-enabled NetworkManager &>/dev/null; then
@@ -536,6 +560,13 @@ fi
 if [[ $(arch-chroot /mnt readlink /usr/local/bin/displays 2>/dev/null) != /usr/bin/arandr ]]; then
   log "creating symlink for arandr"
   arch-chroot /mnt ln -sf /usr/bin/arandr /usr/local/bin/displays
+  changed
+fi
+
+# ensure home directory ownership
+if find "/mnt/home/$USERNAME" \( ! -user "$USERNAME" -o ! -group "$USERNAME" \) -print -quit 2>/dev/null | grep -q .; then
+  log "setting user:group for /home/$USERNAME"
+  arch-chroot /mnt chown -R "$USERNAME:$USERNAME" "/home/$USERNAME"
   changed
 fi
 
