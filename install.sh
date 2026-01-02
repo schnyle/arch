@@ -24,11 +24,6 @@ restartnow() { log "restarting install script" && exec "$(realpath "$0")"; }
 CHANGES=0
 changed() { ((CHANGES++)); }
 
-GRUB_BOOTLOADER_EXISTS=$(
-  efibootmgr -v | grep -q "grubx64.efi"
-  echo $?
-)
-
 HAS_NVIDIA=$(
   lspci | grep -iq "nvidia"
   echo $?
@@ -56,21 +51,49 @@ fi
 if ! mountpoint -q /mnt; then
   log "parititoning the disks"
 
+  # get install device from user
   while true; do
     echo "available devices:"
     lsblk -d -o NAME,SIZE,TYPE | grep disk
     echo
-    read -r -p "enter device name (omit '/dev/'): " device
+    read -r -p "enter device name (omit '/dev/'): " install_device
+    install_device="/dev/$install_device"
 
-    if [[ -b "/dev/$device" ]]; then
-      log "selected device: $device"
+    if [[ -b "$install_device" ]]; then
+      log "selected device: $install_device"
       break
     else
-      echo "device '$device' not found, try again"
+      echo "device '$install_device' not found, try again"
     fi
   done
 
-  sfdisk "/dev/$device" <<EOF
+  # check if device has partitions and cleanup
+  if lsblk -n "$install_device" | grep -q part; then
+    echo "WARNING: this will destroy all data on $install_device"
+    lsblk "$install_device"
+    read -r -p "Continue? (yes/no): " confirm
+    [[ "$confirm" != "yes" ]] && exit 1
+
+    # remove any EFI boot entries pointing to this device
+    while read -r boot_entry; do
+      boot_num=$(echo "$boot_entry" | grep -oP "^Boot\K[0-9]{4}")
+
+      uuid=$(echo "$boot_entry" | grep -oP "[a-f0-9-]{36}")
+      [[ -z "$uuid" ]] && continue
+
+      boot_device=$(blkid | grep -i "$uuid" | cut -d: -f1)
+      [[ -z "$boot_device" ]] && continue
+
+      if [[ "$boot_device" =~ ^${install_device} ]]; then
+        log "removing boot entry $boot_num"
+        efibootmgr -b "$boot_num" -B
+      fi
+    done < <(efibootmgr -v | grep -E "^Boot[0-9]{4}")
+
+    wipefs -a "$install_device"
+  fi
+
+  sfdisk "$install_device" <<EOF
 label: gpt
 ,$BOOT_SIZE,U
 ,$SWAP_SIZE,S
@@ -78,21 +101,21 @@ label: gpt
 write
 EOF
 
-  if [[ $device =~ nvme ]]; then
-    device="${device}p"
+  if [[ $install_device =~ nvme ]]; then
+    install_device="${install_device}p"
   fi
 
   log "formatting the partitions"
   # 1.10 Format the partitions
-  mkfs.fat -F32 "/dev/${device}1"
-  mkswap "/dev/${device}2"
-  swapon "/dev/${device}2"
-  mkfs.ext4 "/dev/${device}3"
+  mkfs.fat -F32 "${install_device}1"
+  mkswap "${install_device}2"
+  swapon "${install_device}2"
+  mkfs.ext4 "${install_device}3"
 
   log "mounting the file systems"
   # 1.11 Mount the file systems
-  mount "/dev/${device}3" /mnt
-  mount --mkdir "/dev/${device}1" /mnt/boot
+  mount "${install_device}3" /mnt
+  mount --mkdir "${install_device}1" /mnt/boot
   changed
 fi
 
@@ -197,26 +220,30 @@ if ! arch-chroot /mnt passwd -S root | grep -q " P "; then
 fi
 
 # 3.8 Boot loader
+grub_bootloader_exists=$(
+  efibootmgr -v | grep -q "grubx64.efi"
+  echo $?
+)
 
-if [[ $GRUB_BOOTLOADER_EXISTS -ne 0 ]] && ! arch-chroot /mnt pacman -Q grub efibootmgr os-prober &>/dev/null; then
+if ! arch-chroot /mnt pacman -Q grub efibootmgr os-prober &>/dev/null; then
   log "installing bootloader packages"
   arch-chroot /mnt pacman -S --noconfirm grub efibootmgr os-prober
   restartnow
 fi
 
-if [[ $GRUB_BOOTLOADER_EXISTS -ne 0 ]] && [[ ! -f /mnt/boot/EFI/GRUB/grubx64.efi ]]; then
+if [[ $grub_bootloader_exists -ne 0 ]] && [[ ! -f /mnt/boot/EFI/GRUB/grubx64.efi ]]; then
   log "installing GRUB bootloader"
   arch-chroot /mnt grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB
   changed
 fi
 
-if [[ $GRUB_BOOTLOADER_EXISTS -ne 0 ]] && [[ ! -f /mnt/boot/grub/grub.cfg ]]; then
+if [[ $grub_bootloader_exists -ne 0 ]] && [[ ! -f /mnt/boot/grub/grub.cfg ]]; then
   log "configuring GRUB bootloader"
   arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
   changed
 fi
 
-if [[ $GRUB_BOOTLOADER_EXISTS -ne 0 ]] && [[ ! -f /mnt/boot/EFI/BOOT/BOOTX64.EFI ]]; then
+if [[ $grub_bootloader_exists -ne 0 ]] && [[ ! -f /mnt/boot/EFI/BOOT/BOOTX64.EFI ]]; then
   log "creating fallback bootloader for picky UEFI implementations"
   arch-chroot /mnt mkdir -p /boot/EFI/BOOT
   arch-chroot /mnt cp /boot/EFI/GRUB/grubx64.efi /boot/EFI/BOOT/BOOTX64.EFI
