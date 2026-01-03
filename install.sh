@@ -445,6 +445,7 @@ packages=(
   alacritty                   # a cross-platform, GPU-accelerated terminal emulator
   alsa-utils                  # Advanced Linux Sound Architecture - Utilities
   arandr                      # provide a simple visual front end for XRandR 1.2
+  bitwarden                   # a secure and free password manager for all of your devices
   cmake                       # a cross-platform open-source make system
   gnome-themes-extra          # extra GNOME themes (legacy HighContrast icon theme and index files for Adwaita)
   i3-wm                       # improved dynamic tiling window manager
