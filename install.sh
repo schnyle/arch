@@ -5,31 +5,38 @@ system_user="kyle"
 git_name="kyle"
 email="kylesch115@gmail.com"
 
+time_zone="/usr/share/zoneinfo/America/Denver"
+
+hostname="arch-$(date '+%Y%m%d')"
+
+temp_sudoersd_file="/etc/sudoers.d/temp_install"
+
 main_system_uuid="0218a900-edb8-11ee-9a60-aaa17ee25e02"
 
-BOOT_SIZE="512M"
-SWAP_SIZE="2G"
+# partition sizes
+boot_part_size="512M"
+swap_size="2G"
 
-LOG_FILE="/var/log/install.log"
-DEBUG_LOG_FILE="/var/log/install-debug.log"
+log_file="/var/log/install.log"
+debug_log_file="/var/log/install-debug.log"
 
 # logging
-log() { echo "$(date '+%H:%M:%S') $*" | tee -a $LOG_FILE; }
+log() { echo "$(date '+%H:%M:%S') $*" | tee -a $log_file; }
 
 # redirect ouput to verbose log file
 if [[ -z "$LOGGING_SETUP" ]]; then
   log "starting Arch installation"
-  exec 1> >(tee -a $DEBUG_LOG_FILE)
+  exec 1> >(tee -a $debug_log_file)
   exec 2>&1
   export LOGGING_SETUP=1
 fi
 
 restartnow() { log "restarting install script" && exec "$(realpath "$0")"; }
 
-CHANGES=0
-changed() { ((CHANGES++)); }
+changes=0
+changed() { ((changes++)); }
 
-HAS_NVIDIA=$(
+has_nvidia=$(
   lspci | grep -iq "nvidia"
   echo $?
 )
@@ -100,8 +107,8 @@ if ! mountpoint -q /mnt; then
 
   sfdisk "$install_device" <<EOF
 label: gpt
-,$BOOT_SIZE,U
-,$SWAP_SIZE,S
+,$boot_part_size,U
+,$swap_size,S
 ,,L
 write
 EOF
@@ -135,7 +142,7 @@ if ! arch-chroot /mnt pacman -Q base linux linux-firmware &>/dev/null; then
 fi
 
 # 2.1 Select the mirrors
-REFLECTOR_CONF_PATH="/mnt/etc/xdg/reflector/reflector.conf"
+reflector_conf="/mnt/etc/xdg/reflector/reflector.conf"
 
 # install reflector
 if ! arch-chroot /mnt pacman -Q reflector &>/dev/null; then
@@ -146,10 +153,10 @@ if ! arch-chroot /mnt pacman -Q reflector &>/dev/null; then
 fi
 
 # configure reflector
-if ! (grep -q -- "--latest 10" "$REFLECTOR_CONF_PATH" && grep -q -- "--sort rate" "$REFLECTOR_CONF_PATH"); then
+if ! (grep -q -- "--latest 10" "$reflector_conf" && grep -q -- "--sort rate" "$reflector_conf"); then
   log "configuring reflector"
-  sed -i "s/--latest .*/--latest 10/g" "$REFLECTOR_CONF_PATH"
-  sed -i "s/--sort .*/--sort rate/g" "$REFLECTOR_CONF_PATH"
+  sed -i "s/--latest .*/--latest 10/g" "$reflector_conf"
+  sed -i "s/--sort .*/--sort rate/g" "$reflector_conf"
   arch-chroot /mnt systemctl start reflector.service
   changed
 fi
@@ -174,10 +181,9 @@ fi
 # (installation runs from live environment)
 
 # 3.3 Time
-TIME_ZONE="/usr/share/zoneinfo/America/Denver"
-if [[ $(readlink /mnt/etc/localtime) != "$TIME_ZONE" ]]; then
+if [[ $(readlink /mnt/etc/localtime) != "$time_zone" ]]; then
   log "setting the time zone"
-  arch-chroot /mnt ln -sf "$TIME_ZONE" /etc/localtime
+  arch-chroot /mnt ln -sf "$time_zone" /etc/localtime
   changed
 fi
 
@@ -207,10 +213,9 @@ if [[ "$(cat /mnt/etc/locale.conf 2>/dev/null)" != "LANG=en_US.UTF-8" ]]; then
 fi
 
 # 3.5 Network configuration
-HOSTNAME="arch-$(date '+%Y%m%d')"
-if [[ "$(cat /mnt/etc/hostname 2>/dev/null)" != "$HOSTNAME" ]]; then
-  log "setting hostname to $HOSTNAME"
-  echo "$HOSTNAME" >/mnt/etc/hostname
+if [[ "$(cat /mnt/etc/hostname 2>/dev/null)" != "$hostname" ]]; then
+  log "setting hostname to $hostname"
+  echo "$hostname" >/mnt/etc/hostname
   changed
 fi
 
@@ -281,11 +286,10 @@ if ! grep -q "^%wheel ALL=(ALL:ALL) ALL" /mnt/etc/sudoers; then
   changed
 fi
 
-TEMP_SUDOERSD_FILE="/etc/sudoers.d/temp_install"
-if ! grep -q "$system_user ALL=(ALL) NOPASSWD: ALL" "/mnt$TEMP_SUDOERSD_FILE" &>/dev/null || [[ $(arch-chroot /mnt stat -c "%a" "$TEMP_SUDOERSD_FILE") != "440" ]]; then
+if ! grep -q "$system_user ALL=(ALL) NOPASSWD: ALL" "/mnt$temp_sudoersd_file" &>/dev/null || [[ $(arch-chroot /mnt stat -c "%a" "$temp_sudoersd_file") != "440" ]]; then
   log "configuring temporary passwordless sudo for $system_user"
-  arch-chroot /mnt bash -c "echo '$system_user ALL=(ALL) NOPASSWD: ALL' >$TEMP_SUDOERSD_FILE"
-  arch-chroot /mnt chmod 440 "$TEMP_SUDOERSD_FILE"
+  arch-chroot /mnt bash -c "echo '$system_user ALL=(ALL) NOPASSWD: ALL' >$temp_sudoersd_file"
+  arch-chroot /mnt chmod 440 "$temp_sudoersd_file"
   restartnow
 fi
 
@@ -340,11 +344,11 @@ if [[ ! -d "/mnt/home/$system_user/.config/systemd/user/default.target.wants" ]]
   restartnow
 fi
 
-SYMLINK="/home/$system_user/.config/systemd/user/default.target.wants/pulseaudio.service"
-TARGET="/usr/lib/systemd/user/pulseaudio.service"
-if [[ $(arch-chroot /mnt readlink "$SYMLINK" 2>/dev/null) != "$TARGET" ]]; then
+symlink="/home/$system_user/.config/systemd/user/default.target.wants/pulseaudio.service"
+target="/usr/lib/systemd/user/pulseaudio.service"
+if [[ $(arch-chroot /mnt readlink "$symlink" 2>/dev/null) != "$target" ]]; then
   log "enabling pulseaudio user service"
-  arch-chroot /mnt ln -sf "$TARGET" "$SYMLINK"
+  arch-chroot /mnt ln -sf "$target" "$symlink"
   changed
 fi
 
@@ -498,25 +502,25 @@ for pkg in "${packages[@]}"; do
 done
 
 # configure dark theme for GTK applications
-read -r -d '' GTK_SETTINGS <<"EOF"
+read -r -d '' gtk_settings <<"EOF"
 [Settings]
 gtk-theme-name=Adwaita-dark
 gtk-application-prefer-dark-theme=true
 EOF
 
 GTK3_CONFIG="/mnt/home/$system_user/.config/gtk-3.0/settings.ini"
-if [[ "$(cat "$GTK3_CONFIG" 2>/dev/null)" != "$GTK_SETTINGS" ]]; then
+if [[ "$(cat "$GTK3_CONFIG" 2>/dev/null)" != "$gtk_settings" ]]; then
   log "configuring GTK 3.0 dark mode"
   mkdir -p "/mnt/home/$system_user/.config/gtk-3.0"
-  echo "$GTK_SETTINGS" >"$GTK3_CONFIG"
+  echo "$gtk_settings" >"$GTK3_CONFIG"
   changed
 fi
 
 GTK4_CONFIG="/mnt/home/$system_user/.config/gtk-4.0/settings.ini"
-if [[ "$(cat "$GTK4_CONFIG" 2>/dev/null)" != "$GTK_SETTINGS" ]]; then
+if [[ "$(cat "$GTK4_CONFIG" 2>/dev/null)" != "$gtk_settings" ]]; then
   log "configuring GTK 4.0 dark mode"
   mkdir -p "/mnt/home/$system_user/.config/gtk-4.0"
-  echo "$GTK_SETTINGS" >"$GTK4_CONFIG"
+  echo "$gtk_settings" >"$GTK4_CONFIG"
   changed
 fi
 
@@ -528,13 +532,13 @@ if ! arch-chroot /mnt systemctl is-enabled NetworkManager &>/dev/null; then
 fi
 
 # NVIDIA drivers
-if [[ $HAS_NVIDIA -eq 0 ]] && ! arch-chroot /mnt pacman -Q linux-headers &>/dev/null; then
+if [[ $has_nvidia -eq 0 ]] && ! arch-chroot /mnt pacman -Q linux-headers &>/dev/null; then
   log "installing linux headers"
   arch-chroot /mnt pacman -S --noconfirm linux-headers
   restartnow
 fi
 
-if [[ $HAS_NVIDIA -eq 0 ]] && ! arch-chroot /mnt pacman -Q nvidia-dkms nvidia-utils nvidia-settings &>/dev/null; then
+if [[ $has_nvidia -eq 0 ]] && ! arch-chroot /mnt pacman -Q nvidia-dkms nvidia-utils nvidia-settings &>/dev/null; then
   log "installing nvidia drivers (DKMS)"
   arch-chroot /mnt pacman -S --noconfirm nvidia-dkms nvidia-utils nvidia-settings
   changed
@@ -556,7 +560,7 @@ if [[ $(arch-chroot /mnt readlink /usr/local/bin/minesweeper 2>/dev/null) != /op
 fi
 
 # steam
-if [[ $HAS_NVIDIA -eq 0 ]] && ! arch-chroot /mnt pacman -Q steam lib32-nvidia-utils &>/dev/null; then
+if [[ $has_nvidia -eq 0 ]] && ! arch-chroot /mnt pacman -Q steam lib32-nvidia-utils &>/dev/null; then
   log "installing steam & 32 bit NVIDIA utils"
   arch-chroot /mnt pacman -S --noconfirm steam lib32-nvidia-utils
   changed
@@ -649,30 +653,30 @@ fi
 # clean up
 
 # copy log files
-if [[ ! -f "/mnt$LOG_FILE" ]] || [[ ! -f "/mnt$DEBUG_LOG_FILE" ]]; then
+if [[ ! -f "/mnt$log_file" ]] || [[ ! -f "/mnt$debug_log_file" ]]; then
   log "copying log files to target system"
-  cp "$LOG_FILE" "/mnt$LOG_FILE"
-  cp "$DEBUG_LOG_FILE" "/mnt$DEBUG_LOG_FILE"
+  cp "$log_file" "/mnt$log_file"
+  cp "$debug_log_file" "/mnt$debug_log_file"
   changed
 fi
 
-if [[ "$CHANGES" -gt 0 ]]; then
-  log "restarting to verify $CHANGES changes"
+if [[ "$changes" -gt 0 ]]; then
+  log "restarting to verify $changes changes"
   exec "$0"
 fi
 
 for i in {1..3}; do
-  if [[ ! -f "/mnt$TEMP_SUDOERSD_FILE" ]]; then
+  if [[ ! -f "/mnt$temp_sudoersd_file" ]]; then
     break
   fi
 
   log "removing temporary passwordless sudo file"
-  rm "/mnt$TEMP_SUDOERSD_FILE"
+  rm "/mnt$temp_sudoersd_file"
   sleep 1
 done
 
-if [[ -f "/mnt$TEMP_SUDOERSD_FILE" ]]; then
-  log "WARNING: failed to remove $TEMP_SUDOERSD_FILE. Remove manually, then reboot the system."
+if [[ -f "/mnt$temp_sudoersd_file" ]]; then
+  log "WARNING: failed to remove $temp_sudoersd_file. Remove manually, then reboot the system."
   exit
 fi
 
