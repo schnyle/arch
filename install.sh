@@ -36,6 +36,11 @@ restartnow() { log "restarting install script" && exec "$(realpath "$0")"; }
 changes=0
 changed() { ((changes++)); }
 
+is_vm=$(
+  systemd-detect-virt -q
+  echo $?
+)
+
 has_nvidia=$(
   lspci | grep -iq "nvidia"
   echo $?
@@ -307,15 +312,15 @@ if ! arch-chroot /mnt pacman -Q git &>/dev/null; then
   restartnow
 fi
 
-if [[ $(arch-chroot /mnt git config --global user.email) != "$email" ]]; then
+if [[ $(arch-chroot /mnt sudo -u "$system_user" git config --global user.email) != "$email" ]]; then
   log "configuring $email as git config user.email"
-  arch-chroot /mnt git config --global user.email "$email"
+  arch-chroot /mnt sudo -u "$system_user" git config --global user.email "$email"
   changed
 fi
 
-if [[ $(arch-chroot /mnt git config --global user.name) != "$git_name" ]]; then
+if [[ $(arch-chroot /mnt sudo -u "$system_user" git config --global user.name) != "$git_name" ]]; then
   log "configuring $git_name as git config user.name"
-  arch-chroot /mnt git config --global user.name "$git_name"
+  arch-chroot /mnt sudo -u "$system_user" git config --global user.name "$git_name"
   changed
 fi
 
@@ -432,7 +437,7 @@ fi
 
 # setup displays (main system only)
 current_system_uuid=$(cat /sys/class/dmi/id/product_uuid 2>/dev/null)
-if [[ -n $current_system_uuid ]] && [[ "$current_system_uuid" == "$main_system_uuid" ]] && ! [[ -f "/mnt/home/$system_user/.screenlayout/display.sh" ]]; then
+if [[ $is_vm -eq 1 ]] && [[ -n $current_system_uuid ]] && [[ "$current_system_uuid" == "$main_system_uuid" ]] && ! [[ -f "/mnt/home/$system_user/.screenlayout/display.sh" ]]; then
   log "configuring displays"
   arch-chroot /mnt sudo -u "$system_user" mkdir -p "/home/$system_user/.screenlayout"
   cat >"/mnt/home/$system_user/.screenlayout/display.sh" <<"EOF"
@@ -442,7 +447,7 @@ EOF
   restartnow
 fi
 
-if [[ $(arch-chroot /mnt stat -c "%a" "/home/$system_user/.screenlayout/display.sh") != "700" ]]; then
+if [[ $is_vm -eq 1 ]] && [[ $(arch-chroot /mnt stat -c "%a" "/home/$system_user/.screenlayout/display.sh") != "700" ]]; then
   log "setting permissions for screen layout config file"
   arch-chroot /mnt chmod 700 "/home/$system_user/.screenlayout/display.sh"
   changed
@@ -590,7 +595,7 @@ for ext in "${extensions[@]}"; do
 done
 
 # compositor (bare-metal only)
-if ! arch-chroot /mnt systemd-detect-virt -q && ! arch-chroot /mnt pacman -Q picom &>/dev/null; then
+if [[ $is_vm -eq 1 ]] && ! arch-chroot /mnt pacman -Q picom &>/dev/null; then
   log "installing compositor"
   arch-chroot /mnt pacman -S --noconfirm picom
   changed
@@ -662,7 +667,7 @@ fi
 
 if [[ "$changes" -gt 0 ]]; then
   log "restarting to verify $changes changes"
-  exec "$0"
+  exec "$(realpath "$0")"
 fi
 
 for i in {1..3}; do
