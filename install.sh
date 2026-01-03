@@ -334,9 +334,9 @@ if [[ $(arch-chroot /mnt readlink "$SYMLINK" 2>/dev/null) != "$TARGET" ]]; then
   changed
 fi
 
-if arch-chroot /mnt find "/home/$USERNAME/.config" ! -user "$USERNAME" -o ! -group "$USERNAME" | grep -q .; then
+if arch-chroot /mnt find "/home/$USERNAME" ! -user "$USERNAME" -o ! -group "$USERNAME" | grep -q .; then
   log "setting .config/ directory ownership"
-  arch-chroot /mnt chown -R "$USERNAME:$USERNAME" "/home/$USERNAME/.config"
+  arch-chroot /mnt chown -R "$USERNAME:$USERNAME" "/home/$USERNAME"
   changed
 fi
 
@@ -413,10 +413,10 @@ if [[ $(arch-chroot /mnt stat -c "%a" $pub_key_path) != "644" ]]; then
 fi
 
 # setup displays (main system only)
-current_system_uuid=$(cat /mnt/sys/class/dmi/id/product_uuid 2>/dev/null)
+current_system_uuid=$(cat /sys/class/dmi/id/product_uuid 2>/dev/null)
 if [[ -n $current_system_uuid ]] && [[ "$current_system_uuid" == "$main_system_uuid" ]] && ! [[ -f "/mnt/home/$USERNAME/.screenlayout/display.sh" ]]; then
   log "configuring displays"
-  mkdir -p "/mnt/home/$USERNAME/.screenlayout"
+  arch-chroot /mnt sudo -u "$USERNAME" mkdir -p "/home/$USERNAME/.screenlayout"
   cat >"/mnt/home/$USERNAME/.screenlayout/display.sh" <<"EOF"
 #!/bin/sh
 xrandr --output HDMI-0 --mode 1920x1080 --pos 4480x354 --rotate normal --output DP-0 --off --output DP-1 --off --output DP-2 --mode 1920x1080 --pos 0x354 --rotate normal --output DP-3 --off --output DP-4 --primary --mode 2560x1440 --pos 1920x0 --rotate normal --output DP-5 --off
@@ -457,6 +457,7 @@ packages=(
   man-db                      # a utility for reading man pages
   neovim                      # fork of Vim aiming to improve user experience, plugins, and GUIs
   networkmanager              # network connection manager and user application
+  npm                         # JavaScript package manager
   pavucontrol                 # PulseAudio volume control
   qmk                         # CLI tool for customzing supported mechanical keyboards
   qutebrowser                 # a keyboard-driven, vim-like browser base on Python and Qt
@@ -464,10 +465,13 @@ packages=(
   sof-firmware                # sound open firmware
   stow                        # manage installation of multiple softwares in the same directory tree/
   tmux                        # terminal multiplexer
+  vi                          # the original ex/vi text editor
   vim                         # Vi Improved, a highly configurable, improved version of the vi text editor
   xorg-server                 # Xorg X server
   xorg-xinit                  # X.Org initialisation program
   openssh                     # SSH protocol implementation for remote login, command execution and file transfer
+  unzip                       # for extracting and viewing files in .zip archives
+  wget                        # network utility to retrieve files from the web
   xclip                       # command line interface to the X11 clipboard
 )
 
@@ -557,6 +561,7 @@ extensions=(
   vscode-icons-team.vscode-icons
   tomoki1207.pdf
   mechatroner.rainbow-csv
+  amazonwebservices.amazon-q-vscode
 )
 
 for ext in "${extensions[@]}"; do
