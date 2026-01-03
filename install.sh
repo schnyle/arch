@@ -1,8 +1,9 @@
 #!/bin/bash
 
 # configuration
-USERNAME="kyle"
-EMAIL="kylesch115@gmail.com"
+system_user="kyle"
+git_name="kyle"
+email="kylesch115@gmail.com"
 
 main_system_uuid="0218a900-edb8-11ee-9a60-aaa17ee25e02"
 
@@ -262,15 +263,15 @@ fi
 # 5.1 user setup
 
 # create user and configure sudo
-if ! arch-chroot /mnt id "$USERNAME" &>/dev/null; then
-  log "creating user $USERNAME"
-  arch-chroot /mnt useradd -m -G wheel "$USERNAME"
+if ! arch-chroot /mnt id "$system_user" &>/dev/null; then
+  log "creating user $system_user"
+  arch-chroot /mnt useradd -m -G wheel "$system_user"
   restartnow
 fi
 
-if ! arch-chroot /mnt passwd -S "$USERNAME" | grep -q " P "; then
-  log "setting password for $USERNAME"
-  arch-chroot /mnt bash -c "passwd '$USERNAME'"
+if ! arch-chroot /mnt passwd -S "$system_user" | grep -q " P "; then
+  log "setting password for $system_user"
+  arch-chroot /mnt bash -c "passwd '$system_user'"
   changed
 fi
 
@@ -281,9 +282,9 @@ if ! grep -q "^%wheel ALL=(ALL:ALL) ALL" /mnt/etc/sudoers; then
 fi
 
 TEMP_SUDOERSD_FILE="/etc/sudoers.d/temp_install"
-if ! grep -q "$USERNAME ALL=(ALL) NOPASSWD: ALL" "/mnt$TEMP_SUDOERSD_FILE" &>/dev/null || [[ $(arch-chroot /mnt stat -c "%a" "$TEMP_SUDOERSD_FILE") != "440" ]]; then
-  log "configuring temporary passwordless sudo for $USERNAME"
-  arch-chroot /mnt bash -c "echo '$USERNAME ALL=(ALL) NOPASSWD: ALL' >$TEMP_SUDOERSD_FILE"
+if ! grep -q "$system_user ALL=(ALL) NOPASSWD: ALL" "/mnt$TEMP_SUDOERSD_FILE" &>/dev/null || [[ $(arch-chroot /mnt stat -c "%a" "$TEMP_SUDOERSD_FILE") != "440" ]]; then
+  log "configuring temporary passwordless sudo for $system_user"
+  arch-chroot /mnt bash -c "echo '$system_user ALL=(ALL) NOPASSWD: ALL' >$TEMP_SUDOERSD_FILE"
   arch-chroot /mnt chmod 440 "$TEMP_SUDOERSD_FILE"
   restartnow
 fi
@@ -295,21 +296,34 @@ if ! arch-chroot /mnt pacman -Q zsh &>/dev/null; then
   restartnow
 fi
 
+# install git
 if ! arch-chroot /mnt pacman -Q git &>/dev/null; then
   log "installing git"
   arch-chroot /mnt pacman -S --noconfirm git
   restartnow
 fi
 
-if ! grep "^$USERNAME:" /mnt/etc/passwd | grep -q "/usr/bin/zsh"; then
-  log "setting zsh as default shell for $USERNAME"
-  arch-chroot /mnt chsh -s /usr/bin/zsh "$USERNAME"
+if [[ $(arch-chroot /mnt git config --global user.email) != "$email" ]]; then
+  log "configuring $email as git config user.email"
+  arch-chroot /mnt git config --global user.email "$email"
   changed
 fi
 
-if [[ ! -d "/mnt/home/$USERNAME/.oh-my-zsh" ]]; then
+if [[ $(arch-chroot /mnt git config --global user.name) != "$git_name" ]]; then
+  log "configuring $git_name as git config user.name"
+  arch-chroot /mnt git config --global user.name "$git_name"
+  changed
+fi
+
+if ! grep "^$system_user:" /mnt/etc/passwd | grep -q "/usr/bin/zsh"; then
+  log "setting zsh as default shell for $system_user"
+  arch-chroot /mnt chsh -s /usr/bin/zsh "$system_user"
+  changed
+fi
+
+if [[ ! -d "/mnt/home/$system_user/.oh-my-zsh" ]]; then
   log "installing oh-my-zsh"
-  arch-chroot /mnt sudo -u "$USERNAME" bash -c "curl -L https://install.ohmyz.sh | sh"
+  arch-chroot /mnt sudo -u "$system_user" bash -c "curl -L https://install.ohmyz.sh | sh"
   changed
 fi
 
@@ -320,13 +334,13 @@ if ! arch-chroot /mnt pacman -Q pulseaudio &>/dev/null; then
   changed
 fi
 
-if [[ ! -d "/mnt/home/$USERNAME/.config/systemd/user/default.target.wants" ]]; then
+if [[ ! -d "/mnt/home/$system_user/.config/systemd/user/default.target.wants" ]]; then
   log "creating pulseaudio systemd directory"
-  arch-chroot /mnt mkdir -p "/home/$USERNAME/.config/systemd/user/default.target.wants"
+  arch-chroot /mnt mkdir -p "/home/$system_user/.config/systemd/user/default.target.wants"
   restartnow
 fi
 
-SYMLINK="/home/$USERNAME/.config/systemd/user/default.target.wants/pulseaudio.service"
+SYMLINK="/home/$system_user/.config/systemd/user/default.target.wants/pulseaudio.service"
 TARGET="/usr/lib/systemd/user/pulseaudio.service"
 if [[ $(arch-chroot /mnt readlink "$SYMLINK" 2>/dev/null) != "$TARGET" ]]; then
   log "enabling pulseaudio user service"
@@ -334,9 +348,9 @@ if [[ $(arch-chroot /mnt readlink "$SYMLINK" 2>/dev/null) != "$TARGET" ]]; then
   changed
 fi
 
-if arch-chroot /mnt find "/home/$USERNAME" ! -user "$USERNAME" -o ! -group "$USERNAME" | grep -q .; then
+if arch-chroot /mnt find "/home/$system_user" ! -user "$system_user" -o ! -group "$system_user" | grep -q .; then
   log "setting .config/ directory ownership"
-  arch-chroot /mnt chown -R "$USERNAME:$USERNAME" "/home/$USERNAME"
+  arch-chroot /mnt chown -R "$system_user:$system_user" "/home/$system_user"
   changed
 fi
 
@@ -353,15 +367,15 @@ if [[ ! -d /mnt/opt/yay/.git ]]; then
   restartnow
 fi
 
-if arch-chroot /mnt find /opt/yay ! -user "$USERNAME" -o ! -group "$USERNAME" | grep -q .; then
+if arch-chroot /mnt find /opt/yay ! -user "$system_user" -o ! -group "$system_user" | grep -q .; then
   log "setting yay directory ownership"
-  arch-chroot /mnt chown -R "$USERNAME:$USERNAME" /opt/yay
+  arch-chroot /mnt chown -R "$system_user:$system_user" /opt/yay
   changed
 fi
 
 if ! arch-chroot /mnt which yay &>/dev/null; then
   log "building and installing yay"
-  arch-chroot /mnt sudo -u "$USERNAME" makepkg -si -D /opt/yay --noconfirm
+  arch-chroot /mnt sudo -u "$system_user" makepkg -si -D /opt/yay --noconfirm
   changed
 fi
 
@@ -372,15 +386,15 @@ if ! arch-chroot /mnt pacman -Q stow &>/dev/null; then
   restartnow
 fi
 
-if ! arch-chroot /mnt test -d "/home/$USERNAME/.dotfiles"; then
+if ! arch-chroot /mnt test -d "/home/$system_user/.dotfiles"; then
   log "cloning dotfiles repository"
-  arch-chroot /mnt sudo -u "$USERNAME" git clone https://github.com/schnyle/dotfiles.git "/home/$USERNAME/.dotfiles"
-  arch-chroot /mnt sudo -u "$USERNAME" bash "/home/$USERNAME/.dotfiles/install.sh"
+  arch-chroot /mnt sudo -u "$system_user" git clone https://github.com/schnyle/dotfiles.git "/home/$system_user/.dotfiles"
+  arch-chroot /mnt sudo -u "$system_user" bash "/home/$system_user/.dotfiles/install.sh"
 fi
 
 # create ed25519 key
-priv_key_path="/home/$USERNAME/.ssh/id_ed25519"
-pub_key_path="/home/$USERNAME/.ssh/id_ed25519.pub"
+priv_key_path="/home/$system_user/.ssh/id_ed25519"
+pub_key_path="/home/$system_user/.ssh/id_ed25519.pub"
 
 if ! arch-chroot /mnt pacman -Q openssh &>/dev/null; then
   log "installing openssh"
@@ -389,14 +403,14 @@ if ! arch-chroot /mnt pacman -Q openssh &>/dev/null; then
 fi
 
 if ! [[ -f "/mnt/$priv_key_path" ]]; then
-  log "creating ed25519 key for $USERNAME"
-  arch-chroot /mnt sudo -u $USERNAME ssh-keygen -t ed25519 -C $EMAIL -f $priv_key_path -N ""
+  log "creating ed25519 key for $system_user"
+  arch-chroot /mnt sudo -u $system_user ssh-keygen -t ed25519 -C $email -f $priv_key_path -N ""
   restartnow
 fi
 
-if [[ $(arch-chroot /mnt stat -c "%a" "/home/$USERNAME/.ssh") != "700" ]]; then
-  log "setting permissions for /home/$USERNAME/.ssh/"
-  arch-chroot /mnt chmod 700 "/home/$USERNAME/.ssh"
+if [[ $(arch-chroot /mnt stat -c "%a" "/home/$system_user/.ssh") != "700" ]]; then
+  log "setting permissions for /home/$system_user/.ssh/"
+  arch-chroot /mnt chmod 700 "/home/$system_user/.ssh"
   changed
 fi
 
@@ -414,19 +428,19 @@ fi
 
 # setup displays (main system only)
 current_system_uuid=$(cat /sys/class/dmi/id/product_uuid 2>/dev/null)
-if [[ -n $current_system_uuid ]] && [[ "$current_system_uuid" == "$main_system_uuid" ]] && ! [[ -f "/mnt/home/$USERNAME/.screenlayout/display.sh" ]]; then
+if [[ -n $current_system_uuid ]] && [[ "$current_system_uuid" == "$main_system_uuid" ]] && ! [[ -f "/mnt/home/$system_user/.screenlayout/display.sh" ]]; then
   log "configuring displays"
-  arch-chroot /mnt sudo -u "$USERNAME" mkdir -p "/home/$USERNAME/.screenlayout"
-  cat >"/mnt/home/$USERNAME/.screenlayout/display.sh" <<"EOF"
+  arch-chroot /mnt sudo -u "$system_user" mkdir -p "/home/$system_user/.screenlayout"
+  cat >"/mnt/home/$system_user/.screenlayout/display.sh" <<"EOF"
 #!/bin/sh
 xrandr --output HDMI-0 --mode 1920x1080 --pos 4480x354 --rotate normal --output DP-0 --off --output DP-1 --off --output DP-2 --mode 1920x1080 --pos 0x354 --rotate normal --output DP-3 --off --output DP-4 --primary --mode 2560x1440 --pos 1920x0 --rotate normal --output DP-5 --off
 EOF
   restartnow
 fi
 
-if [[ $(arch-chroot /mnt stat -c "%a" "/home/$USERNAME/.screenlayout/display.sh") != "700" ]]; then
+if [[ $(arch-chroot /mnt stat -c "%a" "/home/$system_user/.screenlayout/display.sh") != "700" ]]; then
   log "setting permissions for screen layout config file"
-  arch-chroot /mnt chmod 700 "/home/$USERNAME/.screenlayout/display.sh"
+  arch-chroot /mnt chmod 700 "/home/$system_user/.screenlayout/display.sh"
   changed
 fi
 
@@ -490,18 +504,18 @@ gtk-theme-name=Adwaita-dark
 gtk-application-prefer-dark-theme=true
 EOF
 
-GTK3_CONFIG="/mnt/home/$USERNAME/.config/gtk-3.0/settings.ini"
+GTK3_CONFIG="/mnt/home/$system_user/.config/gtk-3.0/settings.ini"
 if [[ "$(cat "$GTK3_CONFIG" 2>/dev/null)" != "$GTK_SETTINGS" ]]; then
   log "configuring GTK 3.0 dark mode"
-  mkdir -p "/mnt/home/$USERNAME/.config/gtk-3.0"
+  mkdir -p "/mnt/home/$system_user/.config/gtk-3.0"
   echo "$GTK_SETTINGS" >"$GTK3_CONFIG"
   changed
 fi
 
-GTK4_CONFIG="/mnt/home/$USERNAME/.config/gtk-4.0/settings.ini"
+GTK4_CONFIG="/mnt/home/$system_user/.config/gtk-4.0/settings.ini"
 if [[ "$(cat "$GTK4_CONFIG" 2>/dev/null)" != "$GTK_SETTINGS" ]]; then
   log "configuring GTK 4.0 dark mode"
-  mkdir -p "/mnt/home/$USERNAME/.config/gtk-4.0"
+  mkdir -p "/mnt/home/$system_user/.config/gtk-4.0"
   echo "$GTK_SETTINGS" >"$GTK4_CONFIG"
   changed
 fi
@@ -551,7 +565,7 @@ fi
 # VS Code
 if ! arch-chroot /mnt pacman -Q visual-studio-code-bin &>/dev/null; then
   log "installing VS Code"
-  arch-chroot /mnt sudo -u "$USERNAME" yay -S --noconfirm visual-studio-code-bin
+  arch-chroot /mnt sudo -u "$system_user" yay -S --noconfirm visual-studio-code-bin
   restartnow
 fi
 
@@ -565,8 +579,8 @@ extensions=(
 )
 
 for ext in "${extensions[@]}"; do
-  if ! arch-chroot /mnt sudo -u "$USERNAME" code --list-extensions | grep -q "^$ext$"; then
-    arch-chroot /mnt sudo -u "$USERNAME" code --install-extension "$ext"
+  if ! arch-chroot /mnt sudo -u "$system_user" code --list-extensions | grep -q "^$ext$"; then
+    arch-chroot /mnt sudo -u "$system_user" code --install-extension "$ext"
     changed
   fi
 done
@@ -606,9 +620,9 @@ if ! arch-chroot /mnt systemctl is-enabled libvirtd.socket &>/dev/null; then
   changed
 fi
 
-if ! arch-chroot /mnt groups "$USERNAME" | grep -q libvirt; then
+if ! arch-chroot /mnt groups "$system_user" | grep -q libvirt; then
   log "adding user to libvirt group"
-  arch-chroot /mnt usermod -aG libvirt "$USERNAME"
+  arch-chroot /mnt usermod -aG libvirt "$system_user"
   changed
 fi
 
@@ -626,9 +640,9 @@ if [[ $(arch-chroot /mnt readlink /usr/local/bin/displays 2>/dev/null) != /usr/b
 fi
 
 # ensure home directory ownership
-if find "/mnt/home/$USERNAME" \( ! -user "$USERNAME" -o ! -group "$USERNAME" \) -print -quit 2>/dev/null | grep -q .; then
-  log "setting user:group for /home/$USERNAME"
-  arch-chroot /mnt chown -R "$USERNAME:$USERNAME" "/home/$USERNAME"
+if find "/mnt/home/$system_user" \( ! -user "$system_user" -o ! -group "$system_user" \) -print -quit 2>/dev/null | grep -q .; then
+  log "setting user:group for /home/$system_user"
+  arch-chroot /mnt chown -R "$system_user:$system_user" "/home/$system_user"
   changed
 fi
 
