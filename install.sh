@@ -4,6 +4,8 @@
 USERNAME="kyle"
 EMAIL="kylesch115@gmail.com"
 
+main_system_uuid="0218a900-edb8-11ee-9a60-aaa17ee25e02"
+
 BOOT_SIZE="512M"
 SWAP_SIZE="2G"
 
@@ -407,6 +409,24 @@ fi
 if [[ $(arch-chroot /mnt stat -c "%a" $pub_key_path) != "644" ]]; then
   log "setting permissions for $pub_key_path"
   arch-chroot /mnt chmod 644 $pub_key_path
+  changed
+fi
+
+# setup displays (main system only)
+current_system_uuid=$(cat /mnt/sys/class/dmi/id/product_uuid 2>/dev/null)
+if [[ -n $current_system_uuid ]] && [[ "$current_system_uuid" == "$main_system_uuid" ]] && ! [[ -f "/mnt/home/$USERNAME/.screenlayout/display.sh" ]]; then
+  log "configuring displays"
+  mkdir -p "/mnt/home/$USERNAME/.screenlayout"
+  cat >"/mnt/home/$USERNAME/.screenlayout/display.sh" <<"EOF"
+#!/bin/sh
+xrandr --output HDMI-0 --mode 1920x1080 --pos 4480x354 --rotate normal --output DP-0 --off --output DP-1 --off --output DP-2 --mode 1920x1080 --pos 0x354 --rotate normal --output DP-3 --off --output DP-4 --primary --mode 2560x1440 --pos 1920x0 --rotate normal --output DP-5 --off
+EOF
+  restartnow
+fi
+
+if [[ $(arch-chroot /mnt stat -c "%a" "/home/$USERNAME/.screenlayout/display.sh") != "700" ]]; then
+  log "setting permissions for screen layout config file"
+  arch-chroot /mnt chmod 700 "/home/$USERNAME/.screenlayout/display.sh"
   changed
 fi
 
