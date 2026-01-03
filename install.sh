@@ -1,9 +1,11 @@
 #!/bin/bash
 
 # configuration
+USERNAME="kyle"
+EMAIL="kylesch115@gmail.com"
+
 BOOT_SIZE="512M"
 SWAP_SIZE="2G"
-USERNAME="kyle"
 
 LOG_FILE="/var/log/install.log"
 DEBUG_LOG_FILE="/var/log/install-debug.log"
@@ -372,6 +374,40 @@ if ! arch-chroot /mnt test -d "/home/$USERNAME/.dotfiles"; then
   log "cloning dotfiles repository"
   arch-chroot /mnt sudo -u "$USERNAME" git clone https://github.com/schnyle/dotfiles.git "/home/$USERNAME/.dotfiles"
   arch-chroot /mnt sudo -u "$USERNAME" bash "/home/$USERNAME/.dotfiles/install.sh"
+fi
+
+# create ed25519 key
+priv_key_path="/home/$USERNAME/.ssh/id_ed25519"
+pub_key_path="/home/$USERNAME/.ssh/id_ed25519.pub"
+
+if ! arch-chroot /mnt pacman -Q openssh &>/dev/null; then
+  log "installing openssh"
+  arch-chroot /mnt pacman -S --noconfirm openssh
+  restartnow
+fi
+
+if ! [[ -f "/mnt/$priv_key_path" ]]; then
+  log "creating ed25519 key for $USERNAME"
+  arch-chroot /mnt sudo -u $USERNAME ssh-keygen -t ed25519 -C $EMAIL -f $priv_key_path -N ""
+  restartnow
+fi
+
+if [[ $(arch-chroot /mnt stat -c "%a" "/home/$USERNAME/.ssh") != "700" ]]; then
+  log "setting permissions for /home/$USERNAME/.ssh/"
+  arch-chroot /mnt chmod 700 "/home/$USERNAME/.ssh"
+  changed
+fi
+
+if [[ $(arch-chroot /mnt stat -c "%a" $priv_key_path) != "600" ]]; then
+  log "setting permissions for $priv_key_path"
+  arch-chroot /mnt chmod 600 $priv_key_path
+  changed
+fi
+
+if [[ $(arch-chroot /mnt stat -c "%a" $pub_key_path) != "644" ]]; then
+  log "setting permissions for $pub_key_path"
+  arch-chroot /mnt chmod 644 $pub_key_path
+  changed
 fi
 
 # 5.2 install software
