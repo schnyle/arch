@@ -829,7 +829,7 @@ fi
 # 5.4 Finalization
 
 # 5.4.1 Ensure user home directory ownership
-if find "/mnt/home/$system_user" \( ! -user "$system_user" -o ! -group "$system_user" \) -print -quit 2>/dev/null | grep -q .; then
+if find "/mnt/home/$system_user" ! -user "$system_user" -o ! -group "$system_user" | grep -q .; then
   log "setting user:group for /home/$system_user"
   arch-chroot /mnt chown -R "$system_user:$system_user" "/home/$system_user"
   changed
