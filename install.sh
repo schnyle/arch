@@ -56,6 +56,7 @@ core_packages=(
   sof-firmware                # sound open firmware
   stow                        # manage installation of multiple softwares in the same directory tree/
   tmux                        # terminal multiplexer
+  tree                        # a directory listing program displaying a depth indented list of files
   vi                          # the original ex/vi text editor
   vim                         # Vi Improved, a highly configurable, improved version of the vi text editor
   xorg-server                 # Xorg X server
