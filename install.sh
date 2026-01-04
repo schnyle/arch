@@ -60,7 +60,6 @@ core_packages=(
   vim                         # Vi Improved, a highly configurable, improved version of the vi text editor
   xorg-server                 # Xorg X server
   xorg-xinit                  # X.Org initialisation program
-  openssh                     # SSH protocol implementation for remote login, command execution and file transfer
   unzip                       # for extracting and viewing files in .zip archives
   wget                        # network utility to retrieve files from the web
   xclip                       # command line interface to the X11 clipboard
@@ -389,7 +388,7 @@ fi
 # 3.3.1 Set the time zone
 if [[ $(readlink /mnt/etc/localtime) != "$time_zone" ]]; then
   log "setting the time zone"
-  arch-chroot /mnt ln -sf "$time_zone" /etc/localtime
+  ln -sf "$time_zone" /mnt/etc/localtime
   changed
 fi
 
@@ -405,7 +404,7 @@ arch-chroot /mnt hwclock --systohc || log "[WARNING] failed to set the hardware 
 # 3.4.1 Enable en_US.UTF-8 locale
 if ! grep -q "^en_US.UTF-8 UTF-8" /mnt/etc/locale.gen; then
   log "specifying locale"
-  arch-chroot /mnt sed -i "s/^#en_US.UTF-8/en_US.UTF-8/g" /etc/locale.gen
+  sed -i "s/^#en_US.UTF-8/en_US.UTF-8/g" /mnt/etc/locale.gen
   changed
 fi
 
@@ -489,8 +488,8 @@ fi
 # to ensure the system can boot even on such hardware.
 if [[ $grub_bootloader_exists -ne 0 ]] && [[ ! -f /mnt/boot/EFI/BOOT/BOOTX64.EFI ]]; then
   log "creating fallback bootloader for picky UEFI implementations"
-  arch-chroot /mnt mkdir -p /boot/EFI/BOOT
-  arch-chroot /mnt cp /boot/EFI/GRUB/grubx64.efi /boot/EFI/BOOT/BOOTX64.EFI
+  mkdir -p /mnt/boot/EFI/BOOT
+  cp /mnt/boot/EFI/GRUB/grubx64.efi /mnt/boot/EFI/BOOT/BOOTX64.EFI
   changed
 fi
 
@@ -526,17 +525,17 @@ fi
 # 5.1.1.3 Allow sudo for wheel group users
 if ! grep -q "^%wheel ALL=(ALL:ALL) ALL" /mnt/etc/sudoers; then
   log "allowing sudo for wheel group users"
-  arch-chroot /mnt sed -i "s/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/" /etc/sudoers
+  sed -i "s/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/" /mnt/etc/sudoers
   changed
 fi
 
 # 5.1.1.4 Setup temporary passwordless sudo for user
 # Create a temporary file which allows the user to run sudo commands without password prompt.
 # Removed at the end of the installation.
-if ! grep -q "$system_user ALL=(ALL) NOPASSWD: ALL" "/mnt$temp_sudoersd_file" &>/dev/null || [[ $(arch-chroot /mnt stat -c "%a" "$temp_sudoersd_file") != "440" ]]; then
+if ! grep -q "$system_user ALL=(ALL) NOPASSWD: ALL" "/mnt$temp_sudoersd_file" &>/dev/null || [[ $(stat -c "%a" "/mnt$temp_sudoersd_file") != "440" ]]; then
   log "configuring temporary passwordless sudo for $system_user"
-  arch-chroot /mnt bash -c "echo '$system_user ALL=(ALL) NOPASSWD: ALL' >$temp_sudoersd_file"
-  arch-chroot /mnt chmod 440 "$temp_sudoersd_file"
+  bash -c "echo '$system_user ALL=(ALL) NOPASSWD: ALL' >/mnt$temp_sudoersd_file"
+  chmod 440 "/mnt$temp_sudoersd_file"
   restartnow
 fi
 
@@ -572,7 +571,7 @@ if [[ ! -d /mnt/opt/yay/.git ]]; then
 fi
 
 # 5.2.2.2 Set user ownership
-if arch-chroot /mnt find /opt/yay ! -user "$system_user" -o ! -group "$system_user" | grep -q .; then
+if find /mnt/opt/yay ! -user "$system_user" -o ! -group "$system_user" | grep -q .; then
   log "setting yay directory ownership"
   arch-chroot /mnt chown -R "$system_user:$system_user" /opt/yay
   changed
@@ -603,13 +602,15 @@ for ext in "${vscode_extensions[@]}"; do
 done
 
 # 5.2.4 NVIDIA packages
-for pkg in "${nvidia_packages[@]}"; do
-  if ! arch-chroot /mnt pacman -Q "$pkg" &>/dev/null; then
-    log "installing NVIDIA package $pkg"
-    arch-chroot /mnt pacman -S --noconfirm "$pkg"
-    changed
-  fi
-done
+if [[ $has_nvidia -eq 0 ]]; then
+  for pkg in "${nvidia_packages[@]}"; do
+    if ! arch-chroot /mnt pacman -Q "$pkg" &>/dev/null; then
+      log "installing NVIDIA package $pkg"
+      arch-chroot /mnt pacman -S --noconfirm "$pkg"
+      changed
+    fi
+  done
+fi
 
 # 5.2.5 Virtual machine packages
 if [[ $is_vm -eq 1 ]]; then
@@ -630,11 +631,11 @@ if [[ ! -d "/mnt/home/$system_user/.oh-my-zsh" ]]; then
 fi
 
 # 5.2.7 Minesweeper
-if ! arch-chroot /mnt test -x /opt/minesweeper/minesweeper; then
+if [[ ! -x /mnt/opt/minesweeper/minesweeper ]]; then
   log "installing minesweeper"
-  arch-chroot /mnt mkdir -p /opt/minesweeper
+  mkdir -p /mnt/opt/minesweeper
   curl -fL https://github.com/schnyle/minesweeper/releases/latest/download/minesweeper -o /mnt/opt/minesweeper/minesweeper
-  arch-chroot /mnt chmod +x /opt/minesweeper/minesweeper
+  chmod +x /mnt/opt/minesweeper/minesweeper
   restartnow
 fi
 
@@ -682,21 +683,21 @@ fi
 # 5.3.3.1 Create systemd directory
 if [[ ! -d "/mnt/home/$system_user/.config/systemd/user/default.target.wants" ]]; then
   log "creating pulseaudio systemd directory"
-  arch-chroot /mnt mkdir -p "/home/$system_user/.config/systemd/user/default.target.wants"
+  mkdir -p "/mnt/home/$system_user/.config/systemd/user/default.target.wants"
   restartnow
 fi
 
 # 5.3.3.2 Enable user service
-symlink="/home/$system_user/.config/systemd/user/default.target.wants/pulseaudio.service"
-target="/usr/lib/systemd/user/pulseaudio.service"
-if [[ $(arch-chroot /mnt readlink "$symlink" 2>/dev/null) != "$target" ]]; then
+symlink="/mnt/home/$system_user/.config/systemd/user/default.target.wants/pulseaudio.service"
+target="/usr/lib/systemd/user/pulseaudio.service" # path as it will exist in the booted system (no /mnt prefix)
+if [[ $(readlink "$symlink" 2>/dev/null) != "$target" ]]; then
   log "enabling pulseaudio user service"
-  arch-chroot /mnt ln -sf "$target" "$symlink"
+  ln -sf "$target" "$symlink"
   changed
 fi
 
 # 5.3.4 Custom dotfiles
-if ! arch-chroot /mnt test -d "/home/$system_user/.dotfiles"; then
+if [[ ! -d "/mnt/home/$system_user/.dotfiles" ]]; then
   log "cloning dotfiles repository"
   arch-chroot /mnt sudo -u "$system_user" git clone https://github.com/schnyle/dotfiles.git "/home/$system_user/.dotfiles"
   arch-chroot /mnt sudo -u "$system_user" bash "/home/$system_user/.dotfiles/install.sh"
@@ -709,30 +710,30 @@ pub_key_path="/home/$system_user/.ssh/id_ed25519.pub"
 # 5.3.5.1 Generate key
 if ! [[ -f "/mnt/$priv_key_path" ]]; then
   log "creating ed25519 key for $system_user"
-  arch-chroot /mnt sudo -u $system_user ssh-keygen -t ed25519 -C $email -f $priv_key_path -N ""
+  arch-chroot /mnt sudo -u $system_user ssh-keygen -t ed25519 -C "$email" -f "$priv_key_path" -N ""
   restartnow
 fi
 
 # 5.3.5.2 Set permissions
 
 # .ssh directory
-if [[ $(arch-chroot /mnt stat -c "%a" "/home/$system_user/.ssh") != "700" ]]; then
+if [[ $(stat -c "%a" "/mnt/home/$system_user/.ssh") != "700" ]]; then
   log "setting permissions for /home/$system_user/.ssh/"
-  arch-chroot /mnt chmod 700 "/home/$system_user/.ssh"
+  chmod 700 "/mnt/home/$system_user/.ssh"
   changed
 fi
 
 # private key
-if [[ $(arch-chroot /mnt stat -c "%a" $priv_key_path) != "600" ]]; then
+if [[ $(stat -c "%a" "/mnt/$priv_key_path") != "600" ]]; then
   log "setting permissions for $priv_key_path"
-  arch-chroot /mnt chmod 600 $priv_key_path
+  chmod 600 "/mnt/$priv_key_path"
   changed
 fi
 
 # public key
-if [[ $(arch-chroot /mnt stat -c "%a" $pub_key_path) != "644" ]]; then
+if [[ $(stat -c "%a" "/mnt/$pub_key_path") != "644" ]]; then
   log "setting permissions for $pub_key_path"
-  arch-chroot /mnt chmod 644 $pub_key_path
+  chmod 644 "/mnt/$pub_key_path"
   changed
 fi
 
@@ -741,7 +742,7 @@ fi
 current_system_uuid=$(cat /sys/class/dmi/id/product_uuid 2>/dev/null)
 if [[ $is_vm -eq 1 ]] && [[ -n $current_system_uuid ]] && [[ "$current_system_uuid" == "$main_system_uuid" ]] && ! [[ -f "/mnt/home/$system_user/.screenlayout/display.sh" ]]; then
   log "configuring displays"
-  arch-chroot /mnt sudo -u "$system_user" mkdir -p "/home/$system_user/.screenlayout"
+  mkdir -p "/mnt/home/$system_user/.screenlayout"
   cat >"/mnt/home/$system_user/.screenlayout/display.sh" <<"EOF"
 #!/bin/sh
 xrandr --output HDMI-0 --mode 1920x1080 --pos 4480x354 --rotate normal --output DP-0 --off --output DP-1 --off --output DP-2 --mode 1920x1080 --pos 0x354 --rotate normal --output DP-3 --off --output DP-4 --primary --mode 2560x1440 --pos 1920x0 --rotate normal --output DP-5 --off
@@ -749,9 +750,9 @@ EOF
   restartnow
 fi
 
-if [[ $is_vm -eq 1 ]] && [[ $(arch-chroot /mnt stat -c "%a" "/home/$system_user/.screenlayout/display.sh") != "700" ]]; then
+if [[ $is_vm -eq 1 ]] && [[ -n $current_system_uuid ]] && [[ "$current_system_uuid" == "$main_system_uuid" ]] && [[ $(stat -c "%a" "/mnt/home/$system_user/.screenlayout/display.sh") != "700" ]]; then
   log "setting permissions for screen layout config file"
-  arch-chroot /mnt chmod 700 "/home/$system_user/.screenlayout/display.sh"
+  chmod 700 "/mnt/home/$system_user/.screenlayout/display.sh"
   changed
 fi
 
@@ -806,23 +807,23 @@ fi
 # 5.3.10 symlinks
 
 # 5.3.10.1 Minesweeper
-if [[ $(arch-chroot /mnt readlink /usr/local/bin/minesweeper 2>/dev/null) != /opt/minesweeper/minesweeper ]]; then
+if [[ $(readlink /mnt/usr/local/bin/minesweeper 2>/dev/null) != /opt/minesweeper/minesweeper ]]; then
   log "create symlink for minesweeper"
-  arch-chroot /mnt ln -sf /opt/minesweeper/minesweeper /usr/local/bin/minesweeper
+  ln -sf /opt/minesweeper/minesweeper /mnt/usr/local/bin/minesweeper
   changed
 fi
 
 # 5.3.10.2 pavucontrol
-if [[ $(arch-chroot /mnt readlink /usr/local/bin/audio 2>/dev/null) != /usr/bin/pavucontrol ]]; then
+if [[ $(readlink /mnt/usr/local/bin/audio 2>/dev/null) != /usr/bin/pavucontrol ]]; then
   log "creating symlink for pavucontrol"
-  arch-chroot /mnt ln -sf /usr/bin/pavucontrol /usr/local/bin/audio
+  ln -sf /usr/bin/pavucontrol /mnt/usr/local/bin/audio
   changed
 fi
 
 # 5.3.10.3 arandr
-if [[ $(arch-chroot /mnt readlink /usr/local/bin/displays 2>/dev/null) != /usr/bin/arandr ]]; then
+if [[ $(readlink /mnt/usr/local/bin/displays 2>/dev/null) != /usr/bin/arandr ]]; then
   log "creating symlink for arandr"
-  arch-chroot /mnt ln -sf /usr/bin/arandr /usr/local/bin/displays
+  ln -sf /usr/bin/arandr /mnt/usr/local/bin/displays
   changed
 fi
 
@@ -850,7 +851,7 @@ if [[ "$changes" -gt 0 ]]; then
 fi
 
 # 5.4.4 Remove temporary passwordless sudo file
-for i in {1..3}; do
+for _ in {1..3}; do
   if [[ ! -f "/mnt$temp_sudoersd_file" ]]; then
     break
   fi

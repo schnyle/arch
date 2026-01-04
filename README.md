@@ -57,3 +57,4 @@ git config core.hooksPath hooks
 - Internet connection
 - At least 4GB RAM recommended
 - 20GB+ disk space
+
