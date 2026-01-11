@@ -15,11 +15,7 @@ fi
 
 procedure="$input_dir/procedure.md"
 
-if ! git diff --cached --name-only | grep -q "^${install_script}$"; then
-  exit 0
-fi
-
-echo "detected changes to $install_script, generating procedure"
+echo "generating procedure for $input_dir"
 
 echo "" >"$procedure"
 
