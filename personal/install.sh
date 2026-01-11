@@ -572,7 +572,7 @@ if [[ ! -d /mnt/opt/yay/.git ]]; then
 fi
 
 # 5.2.2.2 Set user ownership
-if arch-chrottr find /opt/yay ! -user "$system_user" -o ! -group "$system_user" | grep -q .; then
+if arch-chroot /mnt find /opt/yay ! -user "$system_user" -o ! -group "$system_user" | grep -q .; then
   log "setting yay directory ownership"
   arch-chroot /mnt chown -R "$system_user:$system_user" /opt/yay
   changed
@@ -831,7 +831,7 @@ fi
 # 5.4 Finalization
 
 # 5.4.1 Ensure user home directory ownership
-if arch-chroot find "/home/$system_user" ! -user "$system_user" -o ! -group "$system_user" | grep -q .; then
+if arch-chroot /mnt find "/home/$system_user" ! -user "$system_user" -o ! -group "$system_user" | grep -q .; then
   log "setting user:group for /home/$system_user"
   arch-chroot /mnt chown -R "$system_user:$system_user" "/home/$system_user"
   changed
