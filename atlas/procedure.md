@@ -55,7 +55,7 @@
 		3.8.4 Create fallback bootloader for non-compliant UEFI implementations.
 4. Reboot
 5. Post-installation
-	5.1 Sytem preparation
+	5.1 System preparation
 		5.1.1 User setup
 			5.1.1.1 Create user
 			5.1.1.2 Set password
@@ -65,14 +65,17 @@
 		5.2.1 Core pacman packages
 	5.3 Configuration
 		5.3.1 Enable NetworkManager service
-		5.3.2 Enable sshd service
+		5.3.2 Configure and enable SSH
+			5.3.2.1 Configure no root login
+			5.3.2.2 Configure non-standard port
+			5.3.2.3 Enable sshd service
 		5.3.3 Enable avahi-daemon
 		5.3.4 Firewall
 			5.3.4.1 Bind mount live kernel modules for ufw
 			5.3.4.2 Disable IPv6
 			5.3.4.3 Default deny incoming
 			5.3.4.4 Default allow outgoing
-			5.3.4.5 Allow TCP on port 22
+			5.3.4.5 Allow TCP on port [SSH PORT]
 			5.3.4.6 Enable ufw service
 			5.3.4.7 Enable firewall
 		5.3.5 Intrusion prevention

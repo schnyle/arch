@@ -9,8 +9,6 @@
 
 # 0.1.1 User
 system_user="kyle"
-git_name="kyle"
-email="kylesch115@gmail.com"
 
 # 0.1.2 System
 time_zone="/usr/share/zoneinfo/America/Denver"
@@ -18,6 +16,7 @@ hostname="arch-$(date '+%Y%m%d')"
 temp_sudoersd_file="/etc/sudoers.d/temp_install"
 boot_part_size="512M"
 swap_size="2G"
+ssh_port=2222
 
 # 0.1.3 Script
 log_file="/var/log/install.log"
@@ -32,9 +31,11 @@ core_packages=(
   avahi          # Service Discovery for Linux using mDNS/DNS-SD (compatible with Bonjour)
   fail2ban       # bans IPs after too many failed authentication attempts
   git            # the fast distributed version control system
+  inetutils      # a collection of common network programs
   networkmanager # network connection manager and user application
   openssh        # SSH protocol implementation for remote login, command execution and file transfer
   ufw            # Uncomplicated and easy to use CLI tool for managing a netfilter firewall
+  vim            # Vi Improved, a highly configurable, improved version of the vi text editor
 )
 
 # 0.3 Function definitions
@@ -424,7 +425,7 @@ fi
 # 5. Post-installation
 # ====================
 
-# 5.1 Sytem preparation
+# 5.1 System preparation
 # ---------------------
 
 # 5.1.1 User setup
@@ -481,7 +482,25 @@ if ! arch-chroot /mnt systemctl is-enabled NetworkManager &>/dev/null; then
   changed
 fi
 
-# 5.3.2 Enable sshd service
+# 5.3.2 Configure and enable SSH
+
+# 5.3.2.1 Configure no root login
+no_root_login="PermitRootLogin no"
+if ! grep -q "^$no_root_login" /mnt/etc/ssh/sshd_config; then
+  log "configuring sshd_config to not permit root login"
+  sed -i s/"^#PermitRootLogin.*"/"$no_root_login"/ /mnt/etc/ssh/sshd_config
+  changed
+fi
+
+# 5.3.2.2 Configure non-standard port
+ssh_port_line="Port $ssh_port"
+if ! grep -q "^$ssh_port_line" /mnt/etc/ssh/sshd_config; then
+  log "configuring sshd_config to use port $ssh_port"
+  sed -i s/"^#Port.*"/"$ssh_port_line"/ /mnt/etc/ssh/sshd_config
+  restartnow
+fi
+
+# 5.3.2.3 Enable sshd service
 if ! arch-chroot /mnt systemctl is-enabled sshd &>/dev/null; then
   log "enabling sshd"
   arch-chroot /mnt systemctl enable sshd
@@ -532,10 +551,10 @@ if ! arch-chroot /mnt ufw status verbose | grep -q "allow (outgoing)"; then
   changed
 fi
 
-# 5.3.4.5 Allow TCP on port 22
-if ! arch-chroot /mnt ufw status verbose | grep -q "22/tcp.*ALLOW"; then
-  log "ufw: allowing TCP on port 22"
-  arch-chroot /mnt ufw allow 22/tcp
+# 5.3.4.5 Allow TCP on port [SSH PORT]
+if ! arch-chroot /mnt ufw status verbose | grep -q "$ssh_port/tcp.*ALLOW"; then
+  log "ufw: allowing TCP on port $ssh_port"
+  arch-chroot /mnt ufw allow $ssh_port/tcp
   changed
 fi
 

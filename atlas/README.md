@@ -17,3 +17,7 @@ curl -fsSL https://raw.githubusercontent.com/schnyle/arch/main/atlas.sh | \
 ## Requirements
 
 - Debian 13.2
+
+## TODO
+
+- update SSH hardening to disallow password auth
