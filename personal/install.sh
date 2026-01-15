@@ -396,6 +396,13 @@ fi
 # 3.3.2 Synchronize system and hardware clocks
 arch-chroot /mnt hwclock --systohc || log "[WARNING] failed to set the hardware clock"
 
+# 3.3.3 Enable NTP time synchronization
+if ! arch-chroot /mnt systemctl is-enabled systemd-timesyncd &>/dev/null; then
+  log "enabling systemd-timesyncd"
+  arch-chroot /mnt systemctl enable systemd-timesyncd
+  changed
+fi
+
 # 3.4 Localization
 # ----------------
 # To use the correct region and language specific formatting (like dates, currency, decimal separators),

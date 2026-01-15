@@ -41,6 +41,7 @@
 	3.3 Time
 		3.3.1 Set the time zone
 		3.3.2 Synchronize system and hardware clocks
+		3.3.3 Enable NTP time synchronization
 	3.4 Localization
 		3.4.1 Enable en_US.UTF-8 locale
 		3.4.2 Generate locales

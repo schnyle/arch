@@ -21,3 +21,4 @@ curl -fsSL https://raw.githubusercontent.com/schnyle/arch/main/atlas.sh | \
 ## TODO
 
 - update SSH hardening to disallow password auth
+- automatic updates
