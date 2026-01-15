@@ -66,7 +66,12 @@
 			5.1.1.2 Set password
 			5.1.1.3 Allow sudo for wheel group users
 			5.1.1.4 Setup temporary passwordless sudo for user
-		5.1.2 Enable 32-bit libraries
+		5.1.2 Home directory organization
+			5.1.2.1 Create user config directory
+			5.1.2.2 Create XDG directory mapping file
+			5.1.2.3 Disable XDG directory mapping regeneration
+			5.1.2.4 Create user home directories
+		5.1.3 Enable 32-bit libraries
 	5.2 Software installation
 		5.2.1 Core pacman packages
 		5.2.2 Arch User Repository helper (yay)

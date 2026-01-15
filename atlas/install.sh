@@ -468,6 +468,62 @@ if ! grep -q "$system_user ALL=(ALL) NOPASSWD: ALL" "/mnt$temp_sudoersd_file" &>
   restartnow
 fi
 
+# 5.1.2 Home directory organization
+
+home_dirs=(
+  docs
+  media
+  misc
+  repos
+)
+
+user_dirs_content=$(
+  cat <<"EOF"
+XDG_DOWNLOAD_DIR="/tmp"
+XDG_DESKTOP_DIR="$HOME/misc"
+XDG_DOCUMENTS_DIR="$HOME/docs"
+XDG_MUSIC_DIR="$HOME/media"
+XDG_PICTURES_DIR="$HOME/media"
+XDG_VIDEOS_DIR="$HOME/media"
+XDG_TEMPLATES_DIR="$HOME/misc"
+XDG_PUBLICSHARE_DIR="$HOME/misc"
+EOF
+)
+
+# 5.1.2.1 Create user config directory
+if ! [[ -d "/mnt/home/$system_user/.config" ]]; then
+  log "creating user config directory"
+  mkdir "/mnt/home/$system_user/.config"
+  arch-chroot /mnt chown $system_user:$system_user "/home/$system_user/.config"
+  changed
+fi
+
+# 5.1.2.2 Create XDG directory mapping file
+if [[ "$(cat "/mnt/home/$system_user/.config/user-dirs.dirs" 2>/dev/null)" != "$user_dirs_content" ]]; then
+  log "creating XDG directory mapping file"
+  echo "$user_dirs_content" >"/mnt/home/$system_user/.config/user-dirs.dirs"
+  arch-chroot /mnt chown $system_user:$system_user "/home/$system_user/.config/user-dirs.dirs"
+  changed
+fi
+
+# 5.1.2.3 Disable XDG directory mapping regeneration
+if [[ "$(cat "/mnt/home/$system_user/.config/user-dirs.conf" 2>/dev/null)" != "enabled=False" ]]; then
+  log "disabling XDG directory mapping regeneration"
+  echo "enabled=False" >"/mnt/home/$system_user/.config/user-dirs.conf"
+  arch-chroot /mnt chown $system_user:$system_user "/home/$system_user/.config/user-dirs.conf"
+  changed
+fi
+
+# 5.1.2.4 Create user home directories
+for dir in "${home_dirs[@]}"; do
+  if ! [[ -d "/mnt/home/$system_user/$dir" ]]; then
+    log "creating $dir user home directory"
+    mkdir "/mnt/home/$system_user/$dir"
+    arch-chroot /mnt chown $system_user:$system_user "/home/$system_user/$dir"
+    changed
+  fi
+done
+
 # 5.2 Software installation
 # -------------------------
 
