@@ -53,6 +53,7 @@ core_packages=(
   qmk                         # CLI tool for customzing supported mechanical keyboards
   qutebrowser                 # a keyboard-driven, vim-like browser base on Python and Qt
   reflector                   # a Python 3 module and script to retrieve and filter the latest Pacman mirror list
+  rsync                       # A fast and versatile file copying tool for remote and local files
   sof-firmware                # sound open firmware
   stow                        # manage installation of multiple softwares in the same directory tree/
   tmux                        # terminal multiplexer

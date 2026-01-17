@@ -8,7 +8,7 @@
 # --------------------------
 
 # 0.1.1 User
-system_user="kyle"
+system_user="atlas"
 
 # 0.1.2 System
 time_zone="/usr/share/zoneinfo/America/Denver"
@@ -34,6 +34,7 @@ core_packages=(
   inetutils      # a collection of common network programs
   networkmanager # network connection manager and user application
   openssh        # SSH protocol implementation for remote login, command execution and file transfer
+  rsync          # A fast and versatile file copying tool for remote and local files
   ufw            # Uncomplicated and easy to use CLI tool for managing a netfilter firewall
   vim            # Vi Improved, a highly configurable, improved version of the vi text editor
 )
