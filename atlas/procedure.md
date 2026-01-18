@@ -29,6 +29,8 @@
 		1.9.5 Create new partitions on install device
 	1.10 Format the partitions
 	1.11 Mount the file systems
+	1.12 Setup snapshot device
+		1.12.1 Get snapshot device from user
 2. Installation
 	2.2 Install essential packages
 	2.1 Select the mirrors
@@ -71,6 +73,9 @@
 			5.1.3.1 Create storage directories
 			5.1.3.2 Set storage ownership
 			5.1.3.3 Set storage permissions
+		5.1.4 Snapshots directory organization
+			5.1.4.1 Set snapshots ownership
+			5.1.4.2 Set snapshots permissions
 	5.2 Software installation
 		5.2.1 Core pacman packages
 	5.3 Configuration

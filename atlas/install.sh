@@ -228,6 +228,59 @@ EOF
   changed
 fi
 
+# 1.12 Setup snapshot device
+# --------------------------
+# Not part of Arch Installation Guide, but makes most sense to do here
+
+# 1.12.1 Get snapshot device from user
+if ! mountpoint -q /mnt/snapshots; then
+  log "mounting snapshot device"
+
+  while true; do
+    echo "available devices:"
+    lsblk -d -o NAME,SIZE,TYPE | grep disk
+    echo
+    read -r -p "enter device name (omit '/dev/'): " snapshot_device
+    snapshot_device="/dev/$snapshot_device"
+
+    if [[ "$snapshot_device" == "$install_device" ]]; then
+      echo "snapshot device cannot be the same as install device, try again"
+    fi
+
+    if [[ -b "$snapshot_device" ]]; then
+      log "selected device: $snapshot_device"
+      break
+    else
+      echo "device '$snapshot_device' not found, try again"
+    fi
+  done
+
+  # 1.12.2 Validate snapshot device is not partitioned
+  if lsblk -n "$snapshot_device" | grep -q part; then
+    log "ERROR: snapshot device has partitions, expected none. Remove partitons and restart."
+    exit 1
+  fi
+
+  # 1.12.3 Validate snapshot device is ext4
+  if [[ "$(lsblk -f -n -o FSTYPE "$snapshot_device")" != "ext4" ]]; then
+    log "ERROR: snapshot device is not ext4 formatted. Format the device and restart."
+    exit 1
+  fi
+
+  # 1.12.4 Validate snapshot device is not already mounted
+  if mount | grep -q "$snapshot_device"; then
+    log "ERROR: snapshot device is already mounted. Unmount and restart."
+    exit 1
+  fi
+
+  # 1.12.5 Mount snapshot device
+  if ! mountpoint -q /mnt/snapshots; then
+    log "mounting snapshot device"
+    mount --mkdir "${snapshot_device}" /mnt/snapshots
+    restartnow
+  fi
+fi
+
 # ==============
 # 2. Installation
 # ==============
@@ -550,6 +603,22 @@ fi
 # 5.1.3.3 Set storage permissions
 if arch-chroot /mnt find /storage -type d ! -perm 755 | grep -q .; then
   arch-chroot /mnt find /storage -type d -exec chmod 755 {} +
+  changed
+fi
+
+# 5.1.4 Snapshots directory organization
+
+# 5.1.4.1 Set snapshots ownership
+if [[ "$(arch-chroot /mnt stat -c "%U:%G" /snapshots/)" != "$system_user:$system_user" ]]; then
+  log "setting user:group for /snapshots/"
+  arch-chroot /mnt chown $system_user:$system_user /snapshots/
+  changed
+fi
+
+# 5.1.4.2 Set snapshots permissions
+if [[ $(arch-chroot /mnt stat -c "%a" /snapshots/) != "755" ]]; then
+  log "setting /snapshots/ permissions"
+  arch-chroot /mnt chmod 755 /snapshots
   changed
 fi
 
