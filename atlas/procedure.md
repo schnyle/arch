@@ -67,6 +67,10 @@
 			5.1.2.2 Create XDG directory mapping file
 			5.1.2.3 Disable XDG directory mapping regeneration
 			5.1.2.4 Create user home directories
+		5.1.3 Storage directory organization
+			5.1.3.1 Create storage directories
+			5.1.3.2 Set storage ownership
+			5.1.3.3 Set storage permissions
 	5.2 Software installation
 		5.2.1 Core pacman packages
 	5.3 Configuration

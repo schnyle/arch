@@ -16,6 +16,7 @@ hostname="arch-$(date '+%Y%m%d')"
 temp_sudoersd_file="/etc/sudoers.d/temp_install"
 boot_part_size="512M"
 swap_size="2G"
+root_part_size="32G"
 ssh_port=2222
 
 # 0.1.3 Script
@@ -203,6 +204,7 @@ if ! mountpoint -q /mnt; then
 label: gpt
 ,$boot_part_size,U
 ,$swap_size,S
+,$root_part_size,L
 ,,L
 write
 EOF
@@ -216,10 +218,12 @@ EOF
   mkfs.fat -F32 "${install_device}1"
   mkswap "${install_device}2"
   mkfs.ext4 "${install_device}3"
+  mkfs.ext4 "${install_device}4"
 
   log "mounting the file systems"
   mount "${install_device}3" /mnt
   mount --mkdir "${install_device}1" /mnt/boot
+  mount --mkdir "${install_device}4" /mnt/storage
   swapon "${install_device}2"
   changed
 fi
@@ -524,6 +528,30 @@ for dir in "${home_dirs[@]}"; do
     changed
   fi
 done
+
+# 5.1.3 Storage directory organization
+
+# 5.1.3.1 Create storage directories
+for dir in "${home_dirs[@]}"; do
+  if ! [[ -d "/mnt/storage/$dir" ]]; then
+    log "creating $dir storage directory"
+    mkdir "/mnt/storage/$dir"
+    changed
+  fi
+done
+
+# 5.1.3.2 Set storage ownership
+if arch-chroot /mnt find /storage ! -user "$system_user" -o ! -group "$system_user" | grep -q .; then
+  log "setting user:group for /storage/"
+  arch-chroot /mnt chown -R $system_user:$system_user /storage/
+  changed
+fi
+
+# 5.1.3.3 Set storage permissions
+if arch-chroot /mnt find /storage -type d ! -perm 755 | grep -q .; then
+  arch-chroot /mnt find /storage -type d -exec chmod 755 {} +
+  changed
+fi
 
 # 5.2 Software installation
 # -------------------------

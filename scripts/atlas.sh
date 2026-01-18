@@ -7,9 +7,10 @@ config_file="$HOME/.config/atlas.conf"
 default_config=$(
   cat <<"EOF"
 # Atlas config
-host=192.168.122.253
+host=192.168.122.74
 remote_user=atlas
 port=2222
+remote_storage_dir=/storage
 
 # path of SSH key to user for Atlas auth
 sshkey=$HOME/.ssh/id_ed25519
@@ -63,6 +64,10 @@ load_config() {
     echo "error: 'port' not set in config" >&2
     exit 1
   fi
+  if [[ -z "$remote_storage_dir" ]]; then
+    echo "error: 'remote_storage_dir' not set in config" >&2
+    exit 1
+  fi
   if [[ -z "$sshkey" ]]; then
     echo "error: 'sshkey' not set in config" >&2
     exit 1
@@ -104,10 +109,10 @@ parse_global_flags() {
 
 is_path_managed() {
   local canonical="$1"
-  local base_home="$2"
+  local base="$2"
 
   for dir in "${managed_dirs[@]}"; do
-    managed_canonical="$base_home/$dir"
+    managed_canonical="$base/$dir"
     if [[ "$canonical" == "$managed_canonical" ]] || [[ "$canonical" == "$managed_canonical"/* ]]; then
       return 0
     fi
@@ -120,17 +125,15 @@ is_path_managed() {
 local_to_remote_path() {
   local local_path="$1"
   local local_home="$HOME"
-  local remote_home="/home/$remote_user"
 
-  echo "${local_path/$local_home/$remote_home}"
+  echo "${local_path/$local_home/$remote_storage_dir}"
 }
 
 remote_to_local_path() {
   local remote_path="$1"
   local local_home="$HOME"
-  local remote_home="/home/$remote_user"
 
-  echo "${remote_path/$remote_home/$local_home}"
+  echo "${remote_path/$remote_storage_dir/$local_home}"
 }
 
 upload() {
@@ -179,7 +182,7 @@ download() {
   local local_canonical remote_canonical
 
   remote_canonical="$path"
-  if ! is_path_managed "$remote_canonical" "/home/$remote_user"; then
+  if ! is_path_managed "$remote_canonical" "$remote_storage_dir"; then
     exit 1
   fi
 
@@ -287,8 +290,8 @@ list() {
     return
   fi
 
-  remote_canonical="/home/$remote_user/$path"
-  if ! is_path_managed "$remote_canonical" "/home/$remote_user"; then
+  remote_canonical="$remote_storage_dir/$path"
+  if ! is_path_managed "$remote_canonical" "$remote_storage_dir"; then
     exit 1
   fi
 
