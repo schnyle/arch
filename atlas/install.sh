@@ -622,6 +622,15 @@ if [[ $(arch-chroot /mnt stat -c "%a" /snapshots/) != "755" ]]; then
   changed
 fi
 
+# 5.1.4.3 Create initial empty snapshot
+if ! [[ -d "/mnt/snapshots/initial" ]]; then
+  log "creating initial snapshot baseline"
+  mkdir /mnt/snapshots/initial
+  ln -s /snapshots/initial /mnt/snapshots/latest
+  arch-chroot /mnt chown -R $system_user:$system_user /snapshots/
+  changed
+fi
+
 # 5.2 Software installation
 # -------------------------
 
@@ -766,6 +775,88 @@ fi
 if ! arch-chroot /mnt systemctl is-enabled fail2ban &>/dev/null; then
   log "fail2ban: enabling service"
   arch-chroot /mnt systemctl enable fail2ban
+  changed
+fi
+
+# 5.3.6 Snapshots systemd setup
+
+# 5.3.6.1 Download snapshot script
+snapshot_script_path=/usr/local/bin/atlas-snapshot
+
+if ! [[ -f "/mnt$snapshot_script_path" ]]; then
+  log "downloading atlas-snapshot script"
+  curl -fsSL https://raw.githubusercontent.com/schnyle/arch/main/scripts/atlas-snapshot.sh -o "/mnt$snapshot_script_path"
+  restartnow
+fi
+
+# 5.3.6.2 Ensure snapshot script ownership/permissions
+if [[ "$(arch-chroot /mnt stat -c "%U:%G:%a" "$snapshot_script_path")" != "root:root:755" ]]; then
+  log "setting ownership/permissions for atlas-snapshot script"
+  arch-chroot /mnt chown root:root "$snapshot_script_path"
+  arch-chroot /mnt chmod 755 "$snapshot_script_path"
+  changed
+fi
+
+# 5.3.6.3 Create service file
+service_path=/etc/systemd/system/atlas-snapshot.service
+read -r -d '' service_content <<"EOF"
+[Unit]
+Description=Atlas storage snapshot backup
+
+[Service]
+Type=oneshot
+User=atlas
+ExecStart=/usr/local/bin/atlas-snapshot
+StandardOutput=journal
+StandardError=journal
+EOF
+
+if [[ "$(cat "/mnt$service_path" 2>/dev/null)" != "$service_content" ]]; then
+  log "creating atlas-snapshot service file"
+  echo "$service_content" >"/mnt$service_path"
+  restartnow
+fi
+
+# 5.3.6.4 Ensure service file ownership/permissions
+if [[ "$(arch-chroot /mnt stat -c "%U:%G:%a" "$service_path")" != "root:root:644" ]]; then
+  log "setting ownership/permissions for atlas-snapshot service file"
+  arch-chroot /mnt chown root:root "$service_path"
+  arch-chroot /mnt chmod 644 "$service_path"
+  changed
+fi
+
+# 5.3.6.5 Create timer file
+timer_path=/etc/systemd/system/atlas-snapshot.timer
+read -r -d '' timer_content <<"EOF"
+[Unit]
+Description=Daily timer for Atlas snapshots
+
+[Timer]
+OnCalendar=00:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+EOF
+
+if [[ "$(cat "/mnt$timer_path" 2>/dev/null)" != "$timer_content" ]]; then
+  log "creating atlas-snapshot timer file"
+  echo "$timer_content" >"/mnt$timer_path"
+  restartnow
+fi
+
+# 5.3.6.6 Ensure timer file ownership/permissions
+if [[ "$(arch-chroot /mnt stat -c "%U:%G:%a" "$timer_path")" != "root:root:644" ]]; then
+  log "setting ownership/permissions for atlas-snapshot timer file"
+  arch-chroot /mnt chown root:root "$timer_path"
+  arch-chroot /mnt chmod 644 "$timer_path"
+  changed
+fi
+
+# 5.3.6.7 Enable timer
+if ! arch-chroot /mnt systemctl is-enabled atlas-snapshot.timer &>/dev/null; then
+  log "enabling atlas-snapshot timer"
+  arch-chroot /mnt systemctl enable atlas-snapshot.timer
   changed
 fi
 

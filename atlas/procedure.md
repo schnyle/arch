@@ -76,6 +76,7 @@
 		5.1.4 Snapshots directory organization
 			5.1.4.1 Set snapshots ownership
 			5.1.4.2 Set snapshots permissions
+			5.1.4.3 Create initial empty snapshot
 	5.2 Software installation
 		5.2.1 Core pacman packages
 	5.3 Configuration
@@ -96,6 +97,14 @@
 		5.3.5 Intrusion prevention
 			5.3.5.1 Create fail2ban jail.local config
 			5.3.5.2 Enable fail2ban service
+		5.3.6 Snapshots systemd setup
+			5.3.6.1 Download snapshot script
+			5.3.6.2 Ensure snapshot script ownership/permissions
+			5.3.6.3 Create service file
+			5.3.6.4 Ensure service file ownership/permissions
+			5.3.6.5 Create timer file
+			5.3.6.6 Ensure timer file ownership/permissions
+			5.3.6.7 Enable timer
 	5.4 Finalization
 		5.4.1 Ensure user home directory ownership
 		5.4.2 Copy log files to system
