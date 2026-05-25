@@ -69,6 +69,7 @@ core_packages=(
   vim                         # Vi Improved, a highly configurable, improved version of the vi text editor
   xorg-server                 # Xorg X server
   xorg-xinit                  # X.Org initialisation program
+  xorg-xset                   # user preferance utility for X
   unzip                       # for extracting and viewing files in .zip archives
   wget                        # network utility to retrieve files from the web
   xclip                       # command line interface to the X11 clipboard
