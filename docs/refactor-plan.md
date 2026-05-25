@@ -39,7 +39,8 @@ below.
 
 - Directory and file names: kebab-case (`desktop-i3.sh`, `ssh-harden.sh`)
 - Function names: snake_case (`configure_desktop_i3`, `ensure_service_enabled`)
-- Variables: SCREAMING_SNAKE_CASE for globals/registries, snake_case for locals
+- Variables: snake_case for all script variables. Uppercase is reserved
+  for environment variables and shell builtins.
 - The function name for a module matches its filename with `configure_`
   prefix and hyphens converted to underscores:
   `modules/desktop-i3.sh` defines `configure_desktop_i3`.
