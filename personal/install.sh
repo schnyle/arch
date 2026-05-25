@@ -42,6 +42,13 @@ core_packages=(
   i3lock                      # improved screenlocker based upon XCB and PAM
   i3status                    # generates status bar to use with i3bar, dzen2 or xmobar
   inetutils                   # a collection of common network programs
+  texlive-latex               # TeX Live - LaTeX fundamental package
+  texlive-basic               # TeX Live - essential programs and files
+  texlive-binextra            # TeX Live - TeX auxiliary programs
+  texlive-latexrecommended    # TeX Live - LaTeX recommended packages
+  texlive-mathscience         # TeX Live - mathematics, natural sciences, computer science packages
+  texlive-latexextra          # TeX Live - LaTeX additional packages
+  texlab                      # a cross-platform implementation of the Language Server Protocol for LaTeX
   less                        # a terminal based program for viewing text files
   man-db                      # a utility for reading man pages
   neovim                      # fork of Vim aiming to improve user experience, plugins, and GUIs
@@ -65,6 +72,8 @@ core_packages=(
   unzip                       # for extracting and viewing files in .zip archives
   wget                        # network utility to retrieve files from the web
   xclip                       # command line interface to the X11 clipboard
+  zathura                     # minimalistic document viewer
+  zathura-pdf-mupdf           # PDF support for Zathura (MuPDF backend) (supports PDF, ePub, and OpenXPS)
   zsh                         # a very advanced and programmable command interpreter (shell) for UNIX
 )
 
