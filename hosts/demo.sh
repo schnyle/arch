@@ -22,9 +22,11 @@ source_lib "$repo_root"
 
 init_logging "$log_file"
 
-# execution
-log "starting installation"
+install_device=$(select_install_device)
+confirm_wipe_device "$install_device"
+log "installing to $install_device"
 
+# execution
 source_modules "$repo_root" "${bootstrap_modules[@]}"
 run_modules "${bootstrap_modules[@]}"
 

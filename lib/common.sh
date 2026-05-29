@@ -1,6 +1,6 @@
 # shellcheck disable=SC1090
 
-log() { echo "[LOG] $(date '+%H:%M:%S') $*"; }
+log() { echo "[LOG] $(date '+%H:%M:%S') $*" >&2; }
 
 init_logging() {
   local log_file="$1"
@@ -47,4 +47,34 @@ converge_modules() {
     [[ $changes -eq 0 ]] && break
     log "restarting convergence loop"
   done
+}
+
+select_install_device() {
+  local install_device
+  while true; do
+    echo "available devices:" >&2
+    lsblk -d -n -o NAME,SIZE,TYPE >&2
+    echo >&2
+    read -r -p "enter device name: " install_device
+    install_device="/dev/$install_device"
+
+    [[ -b "$install_device" ]] && break
+
+    echo "device '$install_device' not found, try again" >&2
+  done
+  echo "$install_device"
+}
+
+confirm_wipe_device() {
+  local device=$1
+  local input
+  if lsblk -n "$device" | grep -q part; then
+    echo "WARNING: device $device is already partitioned" >&2
+    lsblk "$device" >&2
+    read -r -p "Continue? (yes/no): " input
+    if [[ "$input" != "yes" ]]; then
+      log "install aborted by user"
+      exit 1
+    fi
+  fi
 }
