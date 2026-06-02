@@ -5,6 +5,10 @@
 - `pacman -S qbittorrent`
 - fix `/tmp`
 
+## refactor
+
+- consider detecting if a device is already mounted
+
 ## virtiofs
 
 daemon for file sharing between host and VM

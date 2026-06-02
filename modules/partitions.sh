@@ -36,5 +36,5 @@ configure_partitions() {
   log "writing partition layout to $install_device"
   partitions_layout | sfdisk "$install_device"
 
-  partitions_has_expected_layout "$install_device" || return 1
+  return 1
 }

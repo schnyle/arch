@@ -13,6 +13,21 @@ hands-on experience with bash scripting and Linux system internals.
 - If I'm heading toward a mistake, flag it early with an explanation
   rather than silently fixing it later.
 
+## Response Length
+
+Be terse. I read every word, so every word should earn its place.
+
+- Answer the question asked, not adjacent questions.
+- Skip preambles ("Great question," "Let me think about this"), recaps
+  ("So you're asking..."), and trailing summaries ("Hope that helps").
+- No bullet lists when 1-2 sentences will do.
+- No exhaustive trade-off matrices unless I asked for one.
+- One concrete recommendation over many balanced options.
+- If something is genuinely worth flagging beyond the direct answer, one
+  sentence is usually enough.
+- Default to 3-6 sentences for conceptual questions, code-only for code
+  questions. Expand only when I push for depth.
+
 ## Project
 
 Arch Linux install automation targeting multiple machine types (personal

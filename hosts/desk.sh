@@ -2,6 +2,8 @@
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 boot_size="512M"
 swap_size="2G"
+time_zone="/usr/share/zoneinfo/America/Denver"
+hostname="desk$(date '+%Y%m%d')"
 
 log_file="/home/kyle/repos/arch/test/log"
 
@@ -9,6 +11,14 @@ bootstrap_modules=(
   partitions
   filesystems
   mounts
+  essential_packages
+  mirrors
+  fstab
+  time
+  localization
+  hostname
+  root_password
+  bootloader
 )
 
 regular_modules=(
@@ -26,8 +36,7 @@ source_lib "$repo_root"
 
 init_logging "$log_file"
 
-install_device=$(select_install_device)
-confirm_wipe_device "$install_device"
+install_device=$(get_install_device)
 log "installing to $install_device"
 
 # execution
