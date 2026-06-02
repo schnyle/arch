@@ -115,9 +115,17 @@ Every module file has the same shape:
 1. **Package declarations at top** using `add_pacman` / `add_aur` /
    `add_vscode`. No conditionals — if a module is included in a host, all
    its packages get installed.
-2. **A single `configure_<name>` function** with the install/configure logic.
+2. **Required globals declared** using `: "${var:=}"` no-op stub
+   assignments, one per global the module reads. This documents the
+   module's input contract, silences shellcheck SC2154
+   (referenced-but-not-assigned), and preserves typo detection within
+   the module body.
+3. **A single `configure_<name>` function** with the install/configure logic.
    No pacman calls in here (packages already installed by orchestrator).
-3. **Helper functions are file-local**, used only by the module's own
+   First line should be `require_var var1 var2 ...` matching the stub
+   list — fails loudly at runtime if the host didn't set a value (catches
+   both unset and empty).
+4. **Helper functions are file-local**, used only by the module's own
    configure function. If a helper would be useful to another module, it
    belongs in lib instead.
 
@@ -126,24 +134,33 @@ Example:
 ```bash
 # modules/desktop-i3.sh
 
+: "${system_user:=}"
+
 add_pacman \
   i3-wm i3blocks i3lock i3status \
   alacritty arandr xclip \
   picom
 
 configure_desktop_i3() {
+  require_var system_user
   log "configuring i3 desktop"
 
-  ensure_directory "/home/$SYSTEM_USER/.config"
-  ensure_file_contents "/home/$SYSTEM_USER/.config/i3/config" "$i3_config"
+  ensure_directory "/home/$system_user/.config"
+  ensure_file_contents "/home/$system_user/.config/i3/config" "$i3_config"
   ensure_user_service_enabled pulseaudio.service
 }
 ```
 
+The stub declarations and `require_var` argument list are the same
+contract written twice — keep them in sync. When you add or rename a
+global, update both lines.
+
 Key discipline: **sourcing a module is side-effect-free** except for
-package declarations. Configuration only runs when the function is called
-explicitly. This lets hosts decide order, support dry-run, and source all
-modules to build the full package list without doing any actual install.
+package declarations and stub declarations (the latter only assign empty
+when the global is unset). Configuration only runs when the function is
+called explicitly. This lets hosts decide order, support dry-run, and
+source all modules to build the full package list without doing any
+actual install.
 
 ## Host Conventions
 

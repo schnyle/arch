@@ -15,6 +15,17 @@ init_logging() {
   fi
 }
 
+die() {
+  log "ERROR: $*"
+  exit 1
+}
+
+require_var() {
+  for name in "$@"; do
+    [[ -z "${!name:-}" ]] && die "$name is required but not set"
+  done
+}
+
 ensure_directory() {
   local dir="$1"
   if ! [[ -d "$dir" ]]; then
@@ -35,9 +46,20 @@ source_modules() {
 }
 
 run_modules() {
-  for m in "$@"; do "configure_${m//-/_}"; done
+  local max_attempts=5
+
+  for m in "$@"; do
+    local attempts=0
+    until "configure_${m//-/_}"; do
+      attempts=$((attempts + 1))
+      [[ $attempts -ge $max_attempts ]] && die "$m module failed after $attempts attempts"
+      log "$m module did not converge, retrying ($attempts/$max_attempts)"
+      sleep 2
+    done
+  done
 }
 
+# TODO: should we bound the attempts for each module?
 converge_modules() {
   while true; do
     local changes=0
@@ -74,7 +96,7 @@ confirm_wipe_device() {
     read -r -p "Continue? (yes/no): " input
     if [[ "$input" != "yes" ]]; then
       log "install aborted by user"
-      exit 1
+      exit 0
     fi
   fi
 }
