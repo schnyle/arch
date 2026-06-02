@@ -7,7 +7,7 @@ hostname="desk$(date '+%Y%m%d')"
 
 log_file="/home/kyle/repos/arch/test/log"
 
-bootstrap_modules=(
+install_modules=(
   partitions
   filesystems
   mounts
@@ -21,7 +21,7 @@ bootstrap_modules=(
   bootloader
 )
 
-regular_modules=(
+post_install_modules=(
   demo
   user
 )
@@ -40,17 +40,17 @@ install_device=$(get_install_device)
 log "installing to $install_device"
 
 # execution
-log "running bootstrap modules"
-source_modules "$repo_root" "${bootstrap_modules[@]}"
-run_modules "${bootstrap_modules[@]}"
+log "running install modules"
+source_modules "$repo_root" "${install_modules[@]}"
+converge_ordered "${install_modules[@]}"
 
-# log "running regular modules"
-# source_modules "$repo_root" "${regular_modules[@]}"
+# log "running post-install modules"
+# source_modules "$repo_root" "${post_install_modules[@]}"
 # install_all_pacman_packages
-# converge_modules "${regular_modules[@]}"
+# converge_unordered "${post_install_modules[@]}"
 #
 # log "running cleanup modules"
 # source_modules "$repo_root" "${cleanup_modules[@]}"
-# run_modules "${cleanup_modules[@]}"
+# converge_ordered "${cleanup_modules[@]}"
 
 log "done"

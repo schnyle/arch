@@ -38,9 +38,9 @@ assets/        # static files copied during install
 
 A host script runs three phases:
 
-1. **Bootstrap modules** — sequential, must run in order (disk, format, mount, pacstrap, locale, bootloader). Pre-package-install.
-2. **Regular modules** — converge loop, runs repeatedly until stable.
-3. **Cleanup modules** — runs once after convergence (e.g. removing temporary install scaffolding).
+1. **Install modules** — sequential (run via `converge_ordered`). Maps to sections 1-3 of the Arch installation guide: disk setup, pacstrap, fstab, locale, bootloader, etc.
+2. **Post-install modules** — convergence loop (run via `converge_unordered`). Maps to the Arch guide's post-installation: user environment, packages, services, dotfiles.
+3. **Cleanup modules** — sequential, runs after the convergence loop stabilizes (e.g. removing temporary install scaffolding).
 
 ## Naming Conventions
 
@@ -103,7 +103,7 @@ configure_my_module() {
 }
 ```
 
-Both return nonzero when the module did work, so `run_modules` re-verifies on the next (silent) pass. Return 0 means fully converged.
+Both return nonzero when the module did work, so the orchestrator (`converge_ordered` or `converge_unordered`) re-verifies on the next (silent) pass. Return 0 means fully converged.
 
 ## Development
 
