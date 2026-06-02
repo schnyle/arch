@@ -49,6 +49,62 @@ A host script runs three phases:
 - Variables: snake_case (uppercase reserved for environment variables)
 - Module function name = filename with `configure_` prefix and hyphens converted to underscores
 
+## Module Templates
+
+**Single-state module** — one idempotent state to converge:
+
+```bash
+: "${var1:=}"
+
+# module-local helpers
+
+my_module_done() {
+  # idempotent check that returns 0 if state is correct
+}
+
+configure_my_module() {
+  require_var var1
+
+  my_module_done && return 0
+
+  log "doing work"
+  # the action
+
+  return 1   # convergence pattern: retry verifies via re-check above
+}
+```
+
+**Multi-state module** — several independent substates with per-substate idempotency:
+
+```bash
+: "${var1:=}"
+: "${var2:=}"
+
+# module-local constants/helpers
+
+configure_my_module() {
+  require_var var1 var2
+
+  local changed=0
+
+  if ! check_substate_a; then
+    log "configuring substate a"
+    # action
+    changed=1
+  fi
+
+  if ! check_substate_b; then
+    log "configuring substate b"
+    # action
+    changed=1
+  fi
+
+  return $changed
+}
+```
+
+Both return nonzero when the module did work, so `run_modules` re-verifies on the next (silent) pass. Return 0 means fully converged.
+
 ## Development
 
 Setup pre-commit hooks after cloning:

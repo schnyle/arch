@@ -42,7 +42,20 @@ source_lib() {
 source_modules() {
   local repo_root=$1
   shift
-  for m in "$@"; do source "$repo_root/modules/$m.sh"; done
+
+  for m in "$@"; do
+    local matches
+    matches=$(find "$repo_root/modules" -type f -name "$m.sh")
+    [[ -z $matches ]] && die "$m module not found"
+
+    if [[ $(wc -l <<<"$matches") -gt 1 ]]; then
+      log "$m module is ambiguous:"
+      echo "  ${matches//$'\n'/$'\n  '}"
+      die "module names must be unique across modules/"
+    fi
+
+    source "$matches"
+  done
 }
 
 run_modules() {
