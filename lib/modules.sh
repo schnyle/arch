@@ -39,10 +39,17 @@ converge_ordered() {
 
 # TODO: should we bound the attempts for each module?
 converge_unordered() {
+  local max_attempts=5
+  local -A attempts
+
   while true; do
     local changes=0
     for m in "$@"; do
-      "configure_${m//-/_}" || changes=$((changes + 1))
+      if ! "configure_${m//-/_}"; then
+        changes=$((changes + 1))
+        attempts[$m]=$((${attempts[$m]:-0} + 1))
+        [[ ${attempts[$m]} -ge $max_attempts ]] && die "$m module failed after ${attempts[$m]} attempts"
+      fi
     done
     [[ $changes -eq 0 ]] && break
     log "restarting convergence loop"

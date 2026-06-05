@@ -56,6 +56,12 @@ A host script runs three phases:
 ```bash
 : "${var1:=}"
 
+my_module_pacman_packages=(
+  pkg-a   # what it does
+  pkg-b   # what it does
+)
+add_pacman_packages "${my_module_pacman_packages[@]}"
+
 # module-local helpers
 
 my_module_done() {
@@ -79,6 +85,12 @@ configure_my_module() {
 ```bash
 : "${var1:=}"
 : "${var2:=}"
+
+my_module_pacman_packages=(
+  pkg-a   # what it does
+  pkg-b   # what it does
+)
+add_pacman_packages "${my_module_pacman_packages[@]}"
 
 # module-local constants/helpers
 
@@ -104,6 +116,8 @@ configure_my_module() {
 ```
 
 Both return nonzero when the module did work, so the orchestrator (`converge_ordered` or `converge_unordered`) re-verifies on the next (silent) pass. Return 0 means fully converged.
+
+Packages declared in `<module>_pacman_packages` are registered at source time and installed in a single batched `pacman -S --needed` call before the convergence loop runs. The named-array convention makes the full package list extractable by external scripts.
 
 ## Development
 

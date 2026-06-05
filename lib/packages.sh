@@ -24,6 +24,20 @@ package_exists() {
 }
 
 install_all_pacman_packages() {
-  log "installing ${#pacman_packages[@]} pacman packages"
-  arch-chroot /mnt pacman -S --noconfirm --needed "${pacman_packages[@]}"
+  local max_attempts=5
+  local attempt=0
+  local missing
+
+  while [[ $attempt -lt $max_attempts ]]; do
+    attempt=$((attempt + 1))
+    log "installing ${#pacman_packages[@]} pacman packages (attempt $attempt/$max_attempts)"
+    arch-chroot /mnt pacman -S --noconfirm --needed "${pacman_packages[@]}"
+
+    mapfile -t missing < <(arch-chroot /mnt pacman -Q "${pacman_packages[@]}" 2>&1 |
+      awk -F"'" '/was not found/ {print $2}')
+    [[ ${#missing[@]} -eq 0 ]] && return 0
+    log "${#missing[@]} packages still missing: ${missing[*]}"
+  done
+
+  die "${#missing[@]} packages missing after $max_attempts attempts: ${missing[*]}"
 }
