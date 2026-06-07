@@ -1,0 +1,10 @@
+qemu-full
+virt-manager
+virt-viewer
+dnsmasq
+vde2
+openbsd-netcat
+dmidecode
+libguestfs
+edk2-ovmf
+

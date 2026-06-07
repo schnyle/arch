@@ -1,0 +1,5 @@
+# arandr is installed and has a 'displays' symlink in /usr/local/bin.
+
+configure() {
+  ensure_symlink "/usr/bin/arandr" "/mnt/usr/local/bin/displays"
+}

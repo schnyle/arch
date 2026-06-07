@@ -1,0 +1,13 @@
+partitions
+filesystems
+mounts
+essential-packages
+multilib
+mirrors
+fstab
+time
+localization
+hostname
+root_password
+bootloader
+
