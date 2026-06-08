@@ -3,10 +3,10 @@
 : "${system_user:=}"
 
 configure() {
-  [[ -d "/mnt/home/$system_user/.oh-my-zsh" ]] && return 0
+  [[ -d "/home/$system_user/.oh-my-zsh" ]] && return 0
 
   log "installing oh-my-zsh"
-  arch-chroot /mnt sudo -u "$system_user" bash -c \
+  sudo -u "$system_user" bash -c \
     'sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended'
   return 1
 }

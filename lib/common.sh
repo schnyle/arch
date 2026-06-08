@@ -27,22 +27,47 @@ require_var() {
 }
 
 ensure_directory() {
+  local user=
+  if [[ $1 == "-u" ]]; then
+    user=$2
+    shift 2
+  fi
+
   local path="$1"
+
   [[ -d "$path" ]] && return 0
 
-  log "creating directory: $path"
-  mkdir -p "$path"
+  log "creating directory: $path${user:+ as $user}"
+  if [[ -n "$user" ]]; then
+    sudo -u "$user" mkdir -p "$path"
+  else
+    mkdir -p "$path"
+  fi
+
   return 1
 }
 
 ensure_file_content() {
+  local user=
+  if [[ $1 == "-u" ]]; then
+    user=$2
+    shift 2
+  fi
+
   local src="$1"
   local target="$2"
+
   cmp -s "$src" "$target" && return 0
 
-  log "writing $target"
-  mkdir -p "$(dirname "$target")"
-  cp "$src" "$target"
+  log "writing $target${user:+ as $user}"
+  if [[ -n "$user" ]]; then
+    sudo -u "$user" mkdir -p "$(dirname "$target")"
+    sudo -u "$user" cp "$src" "$target"
+  else
+    mkdir -p "$(dirname "$target")"
+    cp "$src" "$target"
+  fi
+
   return 1
 }
 
@@ -65,44 +90,51 @@ ensure_file_ownership() {
 
   local user_group="$1"
   local path="$2"
-  local chroot_path="${path#/mnt}"
 
   if [[ -n $recursive ]]; then
-    arch-chroot /mnt find "$chroot_path" \
+    find "$path" \
       \( -not -user "${user_group%:*}" -o -not -group "${user_group#*:}" \) \
       -print -quit | grep -q . || return 0
   else
-    [[ $(arch-chroot /mnt stat -c "%U:%G" "$chroot_path" 2>/dev/null) == "$user_group" ]] && return 0
+    [[ $(stat -c "%U:%G" "$path" 2>/dev/null) == "$user_group" ]] && return 0
   fi
 
-  log "setting /mnt$chroot_path ownership to $user_group${recursive:+ (recursive)}"
-  arch-chroot /mnt chown ${recursive:+-R} "$user_group" "$chroot_path"
+  log "setting $path ownership to $user_group${recursive:+ (recursive)}"
+  chown ${recursive:+-R} "$user_group" "$path"
   return 1
 }
 
 ensure_symlink() {
+  local user=
+  if [[ $1 == "-u" ]]; then
+    user=$2
+    shift 2
+  fi
+
   local target="$1"
   local link="$2"
+
   [[ $(readlink "$link" 2>/dev/null) == "$target" ]] && return 0
 
-  log "linking $link -> $target"
-  mkdir -p "$(dirname "$link")"
-  ln -sf "$target" "$link"
+  log "linking $link -> $target${user:+ as $user}"
+  if [[ -n $user ]]; then
+    sudo -u "$user" mkdir -p "$(dirname "$link")"
+    sudo -u "$user" ln -sf "$target" "$link"
+  else
+    mkdir -p "$(dirname "$link")"
+    ln -sf "$target" "$link"
+  fi
+
   return 1
 }
 
 ensure_service_enabled() {
   local service="$1"
-  arch-chroot /mnt systemctl is-enabled "$service" &>/dev/null && return 0
+  systemctl is-enabled "$service" &>/dev/null && return 0
 
   log "enabling $service"
-  arch-chroot /mnt systemctl enable "$service"
+  systemctl enable "$service"
   return 1
-}
-
-source_lib() {
-  local repo_root=$1
-  for f in "$repo_root"/lib/*.sh; do source "$f"; done
 }
 
 script_dir() {

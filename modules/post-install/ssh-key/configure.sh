@@ -9,15 +9,15 @@ configure() {
   local ssh_key_private="$ssh_dir/id_ed25519"
   local ssh_key_public="$ssh_dir/id_ed25519.pub"
 
-  if ! [[ -f "/mnt$ssh_key_private" ]]; then
+  if ! [[ -f "$ssh_key_private" ]]; then
     log "creating ed25519 key for $system_user"
-    arch-chroot /mnt sudo -u $system_user ssh-keygen -t ed25519 -C "$email" -f "$ssh_key_private" -N "" || return 1
+    sudo -u "$system_user" ssh-keygen -t ed25519 -C "$email" -f "$ssh_key_private" -N "" || return 1
     changed=1
   fi
 
-  ensure_file_permissions 700 "/mnt$ssh_dir" || changed=1
-  ensure_file_permissions 600 "/mnt$ssh_key_private" || changed=1
-  ensure_file_permissions 644 "/mnt$ssh_key_public" || changed=1
+  ensure_file_permissions 700 "$ssh_dir" || changed=1
+  ensure_file_permissions 600 "$ssh_key_private" || changed=1
+  ensure_file_permissions 644 "$ssh_key_public" || changed=1
 
   return $changed
 }

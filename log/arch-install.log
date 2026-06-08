@@ -1,11 +1,11 @@
+[LOG] 01:50:42 starting install
 available devices:
 loop0 973.1M loop
 sr0     1.4G rom
 vda      20G disk
 
-enter device name: [LOG] 22:29:05 installing to /dev/vda
-[LOG] 22:29:05 running install modules
-[LOG] 22:29:05 writing partition layout to /dev/vda
+enter device name: [LOG] 01:50:44 installing to /dev/vda
+[LOG] 01:50:44 writing partition layout to /dev/vda
 Checking that no-one is using this disk right now ... OK
 
 Disk /dev/vda: 20 GiB, 21474836480 bytes, 41943040 sectors
@@ -14,14 +14,14 @@ Sector size (logical/physical): 512 bytes / 512 bytes
 I/O size (minimum/optimal): 512 bytes / 512 bytes
 
 >>> Script header accepted.
->>> Created a new GPT disklabel (GUID: 977832BE-84FE-42EC-A742-02032023F788).
+>>> Created a new GPT disklabel (GUID: 43FB4439-697F-45E3-B489-7CC2552DEFDB).
 /dev/vda1: Created a new partition 1 of type 'EFI System' and of size 512 MiB.
 /dev/vda2: Created a new partition 2 of type 'Linux swap' and of size 2 GiB.
 /dev/vda3: Created a new partition 3 of type 'Linux filesystem' and of size 17.5 GiB.
 /dev/vda4: 
 New situation:
 Disklabel type: gpt
-Disk identifier: 977832BE-84FE-42EC-A742-02032023F788
+Disk identifier: 43FB4439-697F-45E3-B489-7CC2552DEFDB
 
 Device       Start      End  Sectors  Size Type
 /dev/vda1     2048  1050623  1048576  512M EFI System
@@ -31,14 +31,14 @@ Device       Start      End  Sectors  Size Type
 The partition table has been altered.
 Calling ioctl() to re-read partition table.
 Syncing disks.
-[LOG] 22:29:05 formatting partitions
+[LOG] 01:50:44 formatting partitions
 mkfs.fat 4.2 (2021-01-31)
 Setting up swapspace version 1, size = 2 GiB (2147479552 bytes)
-no label, UUID=0457c6eb-6cc4-48e1-b093-3e6a89729f73
+no label, UUID=ab887931-1fc9-46c7-9031-390384a0af18
 mke2fs 1.47.4 (6-Mar-2025)
 Discarding device blocks:       0/4587008               done                            
 Creating filesystem with 4587008 4k blocks and 1146880 inodes
-Filesystem UUID: bf4cda40-c533-4f93-9ef5-076770e72f84
+Filesystem UUID: 2e5e9b76-be0d-4ddb-8ba6-04ddbb9e34cb
 Superblock backups stored on blocks: 
 	32768, 98304, 163840, 229376, 294912, 819200, 884736, 1605632, 2654208, 
 	4096000
@@ -48,8 +48,8 @@ Writing inode tables:   0/140       done
 Creating journal (32768 blocks): done
 Writing superblocks and filesystem accounting information:   0/140       done
 
-[LOG] 22:29:05 mounting partitions
-[LOG] 22:29:06 installing essential packages
+[LOG] 01:50:44 mounting partitions
+[LOG] 01:50:44 installing essential packages
 ==> Creating install root at /mnt
 ==> Installing packages to /mnt
 :: Synchronizing package databases...
@@ -610,13 +610,13 @@ Creating user 'alpm' (Arch Linux Package Management) with UID 970 and GID 970.
 ==> Initcpio image generation successful
 (13/13) Reloading system bus configuration...
   Skipped: Running in chroot.
-[LOG] 22:29:30 enabling 32-bit libraries
-[LOG] 22:29:30 syncing pacman database
+[LOG] 01:51:09 enabling 32-bit libraries
+[LOG] 01:51:09 syncing pacman database
 :: Synchronizing package databases...
  core downloading...
  extra downloading...
  multilib downloading...
-[LOG] 22:29:31 installing reflector
+[LOG] 01:51:09 installing reflector
 resolving dependencies...
 looking for conflicting packages...
 
@@ -652,24 +652,24 @@ Optional dependencies for reflector
 (1/2) Reloading system manager configuration...
   Skipped: Running in chroot.
 (2/2) Arming ConditionNeedsUpdate...
-[LOG] 22:29:32 setting reflector --latest 10
-[LOG] 22:29:32 setting reflector --sort rate
-[LOG] 22:29:32 enabling reflector.timer daemon
-[LOG] 22:29:32 generating fstab file
-[LOG] 22:29:32 setting the time zone
-[LOG] 22:29:33 enabling systemd-timesyncd
-[LOG] 22:29:34 enabling en_US.UTF-8 locale
-[LOG] 22:29:34 generating locales
+[LOG] 01:51:10 setting reflector --latest 10
+[LOG] 01:51:10 setting reflector --sort rate
+[LOG] 01:51:10 enabling reflector.timer daemon
+[LOG] 01:51:10 generating fstab file
+[LOG] 01:51:11 setting the time zone
+[LOG] 01:51:11 enabling systemd-timesyncd
+[LOG] 01:51:12 enabling en_US.UTF-8 locale
+[LOG] 01:51:12 generating locales
 Generating locales...
   en_US.UTF-8... done
 Generation complete.
-[LOG] 22:29:35 creating locale.conf and setting LANG
-[LOG] 22:29:35 setting hostname to desk20260607
-[LOG] 22:29:35 setting root password
+[LOG] 01:51:13 creating locale.conf and setting LANG
+[LOG] 01:51:13 setting hostname to desk20260608
+[LOG] 01:51:13 setting root password
 New password: 
 Retype new password: 
 passwd: password updated successfully
-[LOG] 22:29:41 installing bootloader packages
+[LOG] 01:51:26 installing bootloader packages
 resolving dependencies...
 looking for conflicting packages...
 
@@ -710,23 +710,23 @@ installing efibootmgr...
 installing os-prober...
 :: Running post-transaction hooks...
 (1/1) Arming ConditionNeedsUpdate...
-[LOG] 22:29:42 removing orphaned boot entry 0000
+[LOG] 01:51:27 removing orphaned boot entry 0000
 BootCurrent: 0002
 Timeout: 0 seconds
 BootOrder: 0002,0003,0001
 Boot0001* EFI Firmware Setup	FvVol(7cb8bdc9-f8eb-4f34-aaea-3ee4af6516a1)/FvFile(462caa21-7614-4503-836e-8ab6f4662331)
 Boot0002* UEFI QEMU DVD-ROM QM00001 	PciRoot(0x0)/Pci(0x1f,0x2)/Sata(0,65535,0){auto_created_boot_option}
 Boot0003* UEFI Misc Device	PciRoot(0x0)/Pci(0x2,0x4)/Pci(0x0,0x0){auto_created_boot_option}
-[LOG] 22:29:42 removing orphaned boot entry 0001
+[LOG] 01:51:27 removing orphaned boot entry 0001
 BootCurrent: 0002
 Timeout: 0 seconds
 BootOrder: 0002,0003
 Boot0002* UEFI QEMU DVD-ROM QM00001 	PciRoot(0x0)/Pci(0x1f,0x2)/Sata(0,65535,0){auto_created_boot_option}
 Boot0003* UEFI Misc Device	PciRoot(0x0)/Pci(0x2,0x4)/Pci(0x0,0x0){auto_created_boot_option}
-[LOG] 22:29:42 installing GRUB bootloader
+[LOG] 01:51:27 installing GRUB bootloader
 Installing for x86_64-efi platform.
 Installation finished. No error reported.
-[LOG] 22:29:43 configuring GRUB bootloader
+[LOG] 01:51:27 configuring GRUB bootloader
 Generating grub configuration file ...
 Found linux image: /boot/vmlinuz-linux
 Found initrd image: /boot/initramfs-linux.img
@@ -735,9 +735,8 @@ Systems on them will not be added to the GRUB boot configuration.
 Check GRUB_DISABLE_OS_PROBER documentation entry.
 Adding boot menu entry for UEFI Firmware Settings ...
 done
-[LOG] 22:29:43 creating fallback bootloader for picky UEFI implementations
-[LOG] 22:29:43 running post-install modules
-[LOG] 22:29:43 installing 11 pacman packages (attempt 1/5)
+[LOG] 01:51:28 creating fallback bootloader for picky UEFI implementations
+[LOG] 19:51:28 installing 11 pacman packages (attempt 1/5)
 :: Synchronizing package databases...
  core downloading...
  extra downloading...
@@ -1393,32 +1392,29 @@ Creating user 'rtkit' (RealtimeKit) with UID 966 and GID 966.
 (15/17) Updating icon theme caches...
 (16/17) Updating the info directory file...
 (17/17) Updating the desktop file MIME type cache...
-[LOG] 22:30:01 creating user kyle
-[LOG] 22:30:01 setting password for kyle
+[LOG] 19:51:46 creating user kyle
+[LOG] 19:51:46 setting password for kyle
 New password: 
 Retype new password: 
 passwd: password updated successfully
-[LOG] 22:30:05 allowing sudo for wheel group users
-[LOG] 22:30:05 configuring temporary passwordless sudo for kyle
-[LOG] 22:30:05 setting /mnt/etc/sudoers.d/temp_install permissions to 440
-[LOG] 22:30:05 writing /mnt/home/kyle/.config/user-dirs.dirs
-[LOG] 22:30:05 setting /mnt/home/kyle/.config/user-dirs.dirs ownership to kyle:kyle
-[LOG] 22:30:05 writing /mnt/home/kyle/.config/user-dirs.conf
-[LOG] 22:30:05 setting /mnt/home/kyle/.config/user-dirs.conf ownership to kyle:kyle
-[LOG] 22:30:05 creating docs user home directory
-[LOG] 22:30:05 setting /mnt/home/kyle/docs ownership to kyle:kyle
-[LOG] 22:30:05 creating media user home directory
-[LOG] 22:30:05 setting /mnt/home/kyle/media ownership to kyle:kyle
-[LOG] 22:30:05 creating misc user home directory
-[LOG] 22:30:05 setting /mnt/home/kyle/misc ownership to kyle:kyle
-[LOG] 22:30:05 creating repos user home directory
-[LOG] 22:30:05 setting /mnt/home/kyle/repos ownership to kyle:kyle
-[LOG] 22:30:05 enabling NetworkManager
-[LOG] 22:30:05 cloning yay
+[LOG] 19:51:54 allowing sudo for wheel group users
+[LOG] 19:51:55 configuring temporary passwordless sudo for kyle
+[LOG] 19:51:55 setting /etc/sudoers.d/temp_install permissions to 440
+[LOG] 19:51:55 writing /home/kyle/.config/user-dirs.dirs as kyle
+[LOG] 19:51:55 writing /home/kyle/.config/user-dirs.conf as kyle
+[LOG] 19:51:55 creating directory: /home/kyle/docs as kyle
+[LOG] 19:51:55 creating directory: /home/kyle/media as kyle
+[LOG] 19:51:55 creating directory: /home/kyle/misc as kyle
+[LOG] 19:51:55 creating directory: /home/kyle/repos as kyle
+[LOG] 19:51:55 enabling NetworkManager
+Created symlink '/etc/systemd/system/multi-user.target.wants/NetworkManager.service' → '/usr/lib/systemd/system/NetworkManager.service'.
+Created symlink '/etc/systemd/system/dbus-org.freedesktop.nm-dispatcher.service' → '/usr/lib/systemd/system/NetworkManager-dispatcher.service'.
+Created symlink '/etc/systemd/system/network-online.target.wants/NetworkManager-wait-online.service' → '/usr/lib/systemd/system/NetworkManager-wait-online.service'.
+[LOG] 19:51:55 cloning yay
 Cloning into '/opt/yay'...
-[LOG] 22:30:07 setting yay directory ownership
-[LOG] 22:30:07 building and installing yay
-==> Making package: yay 12.6.0-1 (Sun Jun  7 16:30:09 2026)
+[LOG] 19:51:56 setting yay directory ownership
+[LOG] 19:51:56 building and installing yay
+==> Making package: yay 12.6.0-1 (Sun Jun  7 19:51:58 2026)
 ==> Checking runtime dependencies...
 ==> Checking buildtime dependencies...
 ==> Installing missing dependencies...
@@ -1447,7 +1443,7 @@ installing go...
   % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
                                  Dload  Upload  Total   Spent   Left   Speed
   0      0   0      0   0      0      0      0                              0  0      0   0      0   0      0      0      0                              0  0      0   0      0   0      0      0      0                              0
-  0      0   0      0   0      0      0      0                              0100 493.0k 100 493.0k   0      0 449.7k      0   00:01   00:01              0100 493.0k 100 493.0k   0      0 449.6k      0   00:01   00:01              0100 493.0k 100 493.0k   0      0 449.6k      0   00:01   00:01              0
+  0      0   0      0   0      0      0      0                              0100 493.0k 100 493.0k   0      0 674.7k      0                              0100 493.0k 100 493.0k   0      0 674.6k      0                              0100 493.0k 100 493.0k   0      0 674.5k      0                              0
 ==> Validating source files with sha256sums...
     yay-12.6.0.tar.gz ... Passed
 ==> Extracting sources...
@@ -1528,7 +1524,7 @@ done
   -> Generating .MTREE file...
   -> Compressing package...
 ==> Leaving fakeroot environment.
-==> Finished making: yay 12.6.0-1 (Sun Jun  7 16:30:39 2026)
+==> Finished making: yay 12.6.0-1 (Sun Jun  7 19:52:28 2026)
 ==> Installing package yay with pacman -U...
 loading packages...
 resolving dependencies...
@@ -1552,7 +1548,7 @@ Optional dependencies for yay
 installing yay-debug...
 :: Running post-transaction hooks...
 (1/1) Arming ConditionNeedsUpdate...
-[LOG] 22:30:39 installing oh-my-zsh
+[LOG] 19:52:28 installing oh-my-zsh
 Cloning Oh My Zsh...
 From https://github.com/ohmyzsh/ohmyzsh
  * [new branch]      copilot/fix-broken-theme-jonathan -> origin/copilot/fix-broken-theme-jonathan
@@ -1581,85 +1577,43 @@ Before you scream Oh My Zsh! look over the `.zshrc` file to select plugins, them
 • Get stickers, t-shirts, coffee mugs and more: https://commitgoods.com/collections/oh-my-zsh
 
 Run zsh to try it out.
-[LOG] 22:30:41 creating directory: /mnt/opt/minesweeper
-[LOG] 22:30:41 downloading minesweeper
-[LOG] 22:30:42 setting /mnt/opt/minesweeper/minesweeper permissions to 755
-[LOG] 22:30:42 linking /mnt/usr/local/bin/minesweeper -> /opt/minesweeper/minesweeper
-[LOG] 22:30:42 configuring kylesch115@gmail.com as git config user.email
-[LOG] 22:30:42 configuring kyle as git config user.name
-[LOG] 22:30:42 setting zsh as default shell for kyle
+[LOG] 19:52:29 creating directory: /opt/minesweeper
+[LOG] 19:52:29 downloading minesweeper
+[LOG] 19:52:30 setting /opt/minesweeper/minesweeper permissions to 755
+[LOG] 19:52:30 linking /usr/local/bin/minesweeper -> /opt/minesweeper/minesweeper
+[LOG] 19:52:30 configuring kylesch115@gmail.com as git config user.email
+[LOG] 19:52:30 configuring kyle as git config user.name
+[LOG] 19:52:30 setting zsh as default shell for kyle
 Changing shell for kyle.
 Shell changed.
-[LOG] 22:30:42 linking /mnt/home/kyle/.config/systemd/user/default.target.wants/pulseaudio.service -> /usr/lib/systemd/user/pulseaudio.service
-[LOG] 22:30:42 cloning dotfiles repository
+[LOG] 19:52:30 linking /home/kyle/.config/systemd/user/default.target.wants/pulseaudio.service -> /usr/lib/systemd/user/pulseaudio.service as kyle
+[LOG] 19:52:30 cloning dotfiles repository
 Cloning into '/home/kyle/.dotfiles'...
-[LOG] 22:30:43 installing dotfiles
-stow: ERROR: Could not create symlink: .config/alacritty => ../.dotfiles/alacritty/.config/alacritty (Permission denied)
-stow: ERROR: Could not create symlink: .config/i3 => ../.dotfiles/i3/.config/i3 (Permission denied)
-stow: ERROR: Could not create symlink: .config/nvim => ../.dotfiles/nvim/.config/nvim (Permission denied)
-stow: ERROR: Could not create symlink: .config/picom.conf => ../.dotfiles/picom/.config/picom.conf (Permission denied)
-stow: ERROR: Could not create symlink: .config/qutebrowser => ../.dotfiles/qutebrowser/.config/qutebrowser (Permission denied)
-stow: ERROR: Could not create symlink: .config/Code => ../.dotfiles/vscode/.config/Code (Permission denied)
-[LOG] 22:30:43 creating ed25519 key for kyle
+[LOG] 19:52:31 installing dotfiles
+[LOG] 19:52:31 creating ed25519 key for kyle
 Created directory '/home/kyle/.ssh'.
 Generating public/private ed25519 key pair.
 Your identification has been saved in /home/kyle/.ssh/id_ed25519
 Your public key has been saved in /home/kyle/.ssh/id_ed25519.pub
 The key fingerprint is:
-SHA256:EKBKaiH3s3XAxGLTdI0SuzttnVW5NfjaTm38kx38bWs kylesch115@gmail.com
+SHA256:JfbliWbDgWMC5Dc/nejm3lXfYHcyQi95hrDw4XKir+o kylesch115@gmail.com
 The key's randomart image is:
 +--[ED25519 256]--+
-|    .==..o       |
-|   .+o++. .   .. |
-|.oo. o=.     .o..|
-|+o..   +     ..o.|
-|o.  o o S   . o. |
-|.    + + . o  o+.|
-|    . o o o  . oX|
-|       o      oE*|
-|              .++|
+|   .o            |
+|   . .   .       |
+|    . + B = o    |
+|     . * % @ =   |
+|        S # B X o|
+|       o B . B *o|
+|      . o   .   o|
+|       + . .     |
+|   .E..o+ .      |
 +----[SHA256]-----+
-[LOG] 22:30:43 writing /mnt/home/kyle/.screenlayout/display.sh
-[LOG] 22:30:43 setting /mnt/home/kyle/.screenlayout/display.sh permissions to 700
-[LOG] 22:30:43 setting /mnt/home/kyle/.screenlayout ownership to kyle:kyle (recursive)
-[LOG] 22:30:43 writing /mnt/home/kyle/.config/gtk-3.0/settings.ini
-[LOG] 22:30:43 setting /mnt/home/kyle/.config/gtk-3.0 ownership to kyle:kyle
-[LOG] 22:30:43 setting /mnt/home/kyle/.config/gtk-3.0/settings.ini ownership to kyle:kyle
-[LOG] 22:30:43 writing /mnt/home/kyle/.config/gtk-4.0/settings.ini
-[LOG] 22:30:43 setting /mnt/home/kyle/.config/gtk-4.0 ownership to kyle:kyle
-[LOG] 22:30:43 setting /mnt/home/kyle/.config/gtk-4.0/settings.ini ownership to kyle:kyle
-[LOG] 22:30:43 linking /mnt/usr/local/bin/audio -> /usr/bin/pavucontrol
-[LOG] 22:30:43 linking /mnt/usr/local/bin/displays -> /usr/bin/arandr
-[LOG] 22:30:43 restarting convergence loop
-[LOG] 22:30:43 installing dotfiles
-stow: ERROR: Could not create symlink: .config/alacritty => ../.dotfiles/alacritty/.config/alacritty (Permission denied)
-stow: ERROR: Could not create symlink: .config/i3 => ../.dotfiles/i3/.config/i3 (Permission denied)
-stow: ERROR: Could not create symlink: .config/nvim => ../.dotfiles/nvim/.config/nvim (Permission denied)
-stow: ERROR: Could not create symlink: .config/picom.conf => ../.dotfiles/picom/.config/picom.conf (Permission denied)
-stow: ERROR: Could not create symlink: .config/qutebrowser => ../.dotfiles/qutebrowser/.config/qutebrowser (Permission denied)
-stow: ERROR: Could not create symlink: .config/Code => ../.dotfiles/vscode/.config/Code (Permission denied)
-[LOG] 22:30:44 restarting convergence loop
-[LOG] 22:30:44 installing dotfiles
-stow: ERROR: Could not create symlink: .config/alacritty => ../.dotfiles/alacritty/.config/alacritty (Permission denied)
-stow: ERROR: Could not create symlink: .config/i3 => ../.dotfiles/i3/.config/i3 (Permission denied)
-stow: ERROR: Could not create symlink: .config/nvim => ../.dotfiles/nvim/.config/nvim (Permission denied)
-stow: ERROR: Could not create symlink: .config/picom.conf => ../.dotfiles/picom/.config/picom.conf (Permission denied)
-stow: ERROR: Could not create symlink: .config/qutebrowser => ../.dotfiles/qutebrowser/.config/qutebrowser (Permission denied)
-stow: ERROR: Could not create symlink: .config/Code => ../.dotfiles/vscode/.config/Code (Permission denied)
-[LOG] 22:30:44 restarting convergence loop
-[LOG] 22:30:45 installing dotfiles
-stow: ERROR: Could not create symlink: .config/alacritty => ../.dotfiles/alacritty/.config/alacritty (Permission denied)
-stow: ERROR: Could not create symlink: .config/i3 => ../.dotfiles/i3/.config/i3 (Permission denied)
-stow: ERROR: Could not create symlink: .config/nvim => ../.dotfiles/nvim/.config/nvim (Permission denied)
-stow: ERROR: Could not create symlink: .config/picom.conf => ../.dotfiles/picom/.config/picom.conf (Permission denied)
-stow: ERROR: Could not create symlink: .config/qutebrowser => ../.dotfiles/qutebrowser/.config/qutebrowser (Permission denied)
-stow: ERROR: Could not create symlink: .config/Code => ../.dotfiles/vscode/.config/Code (Permission denied)
-[LOG] 22:30:45 restarting convergence loop
-[LOG] 22:30:45 installing dotfiles
-stow: ERROR: Could not create symlink: .config/alacritty => ../.dotfiles/alacritty/.config/alacritty (Permission denied)
-stow: ERROR: Could not create symlink: .config/i3 => ../.dotfiles/i3/.config/i3 (Permission denied)
-stow: ERROR: Could not create symlink: .config/nvim => ../.dotfiles/nvim/.config/nvim (Permission denied)
-stow: ERROR: Could not create symlink: .config/picom.conf => ../.dotfiles/picom/.config/picom.conf (Permission denied)
-stow: ERROR: Could not create symlink: .config/qutebrowser => ../.dotfiles/qutebrowser/.config/qutebrowser (Permission denied)
-stow: ERROR: Could not create symlink: .config/Code => ../.dotfiles/vscode/.config/Code (Permission denied)
-[LOG] 22:30:45 ERROR: dotfiles module failed after 5 attempts
+[LOG] 19:52:31 writing /home/kyle/.screenlayout/display.sh as kyle
+[LOG] 19:52:31 setting /home/kyle/.screenlayout/display.sh permissions to 700
+[LOG] 19:52:31 writing /home/kyle/.config/gtk-3.0/settings.ini as kyle
+[LOG] 19:52:31 writing /home/kyle/.config/gtk-4.0/settings.ini as kyle
+[LOG] 19:52:31 linking /usr/local/bin/audio -> /usr/bin/pavucontrol
+[LOG] 19:52:31 linking /usr/local/bin/displays -> /usr/bin/arandr
+[LOG] 19:52:31 restarting convergence loop
+[LOG] 01:52:31 done

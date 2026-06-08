@@ -7,9 +7,9 @@ configure() {
 
   ensure_service_enabled libvirtd.socket || changed=1
 
-  if ! arch-chroot /mnt groups "$system_user" | grep -q libvirt; then
+  if ! groups "$system_user" | grep -q libvirt; then
     log "adding user to libvirt group"
-    arch-chroot /mnt usermod -aG libvirt "$system_user"
+    usermod -aG libvirt "$system_user"
     changed=1
   fi
 

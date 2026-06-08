@@ -3,9 +3,9 @@
 configure() {
   local changed=0
   local minesweeper_url="https://github.com/schnyle/minesweeper/releases/latest/download/minesweeper"
-  local minesweeper_bin="/mnt/opt/minesweeper/minesweeper"
+  local minesweeper_bin="/opt/minesweeper/minesweeper"
 
-  ensure_directory "/mnt/opt/minesweeper" || changed=1
+  ensure_directory "/opt/minesweeper" || changed=1
 
   if [[ ! -f $minesweeper_bin ]]; then
     log "downloading minesweeper"
@@ -14,7 +14,7 @@ configure() {
   fi
 
   ensure_file_permissions 755 "$minesweeper_bin" || changed=1
-  ensure_symlink "/opt/minesweeper/minesweeper" "/mnt/usr/local/bin/minesweeper" || changed=1
+  ensure_symlink "/opt/minesweeper/minesweeper" "/usr/local/bin/minesweeper" || changed=1
 
   return $changed
 }

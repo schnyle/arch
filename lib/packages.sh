@@ -46,10 +46,10 @@ install_pacman_packages() {
   while [[ $attempt -lt $max_attempts ]]; do
     attempt=$((attempt + 1))
     log "installing $# pacman packages (attempt $attempt/$max_attempts)"
-    arch-chroot /mnt pacman -Sy
-    arch-chroot /mnt pacman -S --noconfirm --needed "$@"
+    pacman -Sy
+    pacman -S --noconfirm --needed "$@"
 
-    mapfile -t missing < <(arch-chroot /mnt pacman -Q "$@" 2>&1 |
+    mapfile -t missing < <(pacman -Q "$@" 2>&1 |
       awk -F"'" '/was not found/ {print $2}')
     [[ ${#missing[@]} -eq 0 ]] && return 0
     log "${#missing[@]} packages still missing: ${missing[*]}"

@@ -1,5 +1,6 @@
 # shellcheck disable=SC2034
 
+is_live_env=1
 boot_size="512M"
 swap_size="2G"
 time_zone="/usr/share/zoneinfo/America/Denver"
