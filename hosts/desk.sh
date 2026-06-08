@@ -44,4 +44,35 @@ post_install_modules=(
   gtk
   pavucontrol
   arandr
+  latex
+  i3
+)
+
+pacman_packages=(
+  adobe-source-code-pro-fonts
+  alacritty
+  alsa-utils
+  bitwarden
+  cmake
+  inetutils
+  less
+  man-db
+  neovim
+  npm
+  openssh
+  qmk
+  qutebrowser
+  rsync
+  sof-firmware
+  tmux
+  tree
+  vi
+  vim
+  xorg-server
+  xorg-xinit
+  xorg-xset
+  unzip
+  wget
+  xclip
+
 )
