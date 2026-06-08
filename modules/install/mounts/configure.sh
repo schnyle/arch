@@ -8,8 +8,6 @@ mounts_active() {
 }
 
 configure() {
-  require_var install_device
-
   local prefix
   prefix=$(partition_prefix "$install_device")
 

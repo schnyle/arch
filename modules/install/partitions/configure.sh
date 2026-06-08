@@ -24,8 +24,6 @@ partitions_has_expected_layout() {
 }
 
 configure() {
-  require_var install_device boot_size swap_size
-
   partitions_has_expected_layout "$install_device" && return 0
 
   if lsblk -n "$install_device" | grep -q part; then

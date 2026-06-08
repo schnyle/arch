@@ -1,80 +1,115 @@
-# shellcheck disable=SC1090
+ensure_directory() {
+  local user=
+  if [[ $1 == "-u" ]]; then
+    user=$2
+    shift 2
+  fi
 
-: "${repo_root:=}"
+  local path="$1"
 
-load_modules() {
-  local file="$1"
-  local -n _out="$2"
-  mapfile -t _out < <(grep -Ev '^\s*(#|$)' "$file")
+  [[ -d "$path" ]] && return 0
+
+  log "creating directory: $path${user:+ as $user}"
+  if [[ -n "$user" ]]; then
+    sudo -u "$user" mkdir -p "$path"
+  else
+    mkdir -p "$path"
+  fi
+
+  return 1
 }
 
-validate_required_vars() {
-  local phase="$1"
-  shift
+ensure_file_content() {
+  local user=
+  if [[ $1 == "-u" ]]; then
+    user=$2
+    shift 2
+  fi
 
-  local declared=()
-  for m in "$@"; do
-    local configure_file="$repo_root/modules/$phase/$m/configure.sh"
-    [[ -f "$configure_file" ]] || continue
-    while IFS= read -r var; do
-      declared+=("$var")
-    done < <(grep -oP '^\s*:\s*"\$\{\K[a-zA-Z_][a-zA-Z_0-9]*' "$configure_file")
-  done
+  local src="$1"
+  local target="$2"
 
-  local missing=()
-  for var in $(printf '%s\n' "${declared[@]}" | sort -u); do
-    [[ -z "${!var:-}" ]] && missing+=("$var")
-  done
+  cmp -s "$src" "$target" && return 0
 
-  [[ ${#missing[@]} -gt 0 ]] && die "host missing required vars: ${missing[*]}"
+  log "writing $target${user:+ as $user}"
+  if [[ -n "$user" ]]; then
+    sudo -u "$user" mkdir -p "$(dirname "$target")"
+    sudo -u "$user" cp "$src" "$target"
+  else
+    mkdir -p "$(dirname "$target")"
+    cp "$src" "$target"
+  fi
+
+  return 1
 }
 
-converge_modules_ordered() {
-  local phase="$1"
-  shift
+ensure_file_permissions() {
+  local mode="$1"
+  local path="$2"
+  [[ $(stat -c "%a" "$path") == "$mode" ]] && return 0
 
-  local max_attempts=5
-
-  for m in "$@"; do
-    local configure_file="$repo_root/modules/$phase/$m/configure.sh"
-    [[ ! -f "$configure_file" ]] && continue
-    source "$configure_file"
-
-    local attempts=0
-    until configure; do
-      attempts=$((attempts + 1))
-      [[ $attempts -ge $max_attempts ]] && die "$m module failed after $attempts attempts"
-
-      # skip the expected re-verify pass; only log subsequent retries
-      if [[ $attempts -gt 1 ]]; then
-        log "$m module did not converge, retrying ($attempts/$max_attempts)"
-        sleep 2
-      fi
-    done
-  done
+  log "setting $path permissions to $mode"
+  chmod "$mode" "$path"
+  return 1
 }
 
-converge_modules_unordered() {
-  local phase="$1"
-  shift
+ensure_file_ownership() {
+  local recursive=
+  if [[ $1 == -R ]]; then
+    recursive=1
+    shift
+  fi
 
-  local max_attempts=5
-  local -A attempts
+  local user_group="$1"
+  local path="$2"
 
-  while true; do
-    local changes=0
-    for m in "$@"; do
-      local configure_file="$repo_root/modules/$phase/$m/configure.sh"
-      [[ ! -f "$configure_file" ]] && continue
-      source "$configure_file"
+  if [[ -n $recursive ]]; then
+    find "$path" \
+      \( -not -user "${user_group%:*}" -o -not -group "${user_group#*:}" \) \
+      -print -quit | grep -q . || return 0
+  else
+    [[ $(stat -c "%U:%G" "$path" 2>/dev/null) == "$user_group" ]] && return 0
+  fi
 
-      if ! configure; then
-        changes=$((changes + 1))
-        attempts[$m]=$((${attempts[$m]:-0} + 1))
-        [[ ${attempts[$m]} -ge $max_attempts ]] && die "$m module failed after ${attempts[$m]} attempts"
-      fi
-    done
-    [[ $changes -eq 0 ]] && break
-    log "restarting convergence loop"
-  done
+  log "setting $path ownership to $user_group${recursive:+ (recursive)}"
+  chown ${recursive:+-R} "$user_group" "$path"
+  return 1
+}
+
+ensure_symlink() {
+  local user=
+  if [[ $1 == "-u" ]]; then
+    user=$2
+    shift 2
+  fi
+
+  local target="$1"
+  local link="$2"
+
+  [[ $(readlink "$link" 2>/dev/null) == "$target" ]] && return 0
+
+  log "linking $link -> $target${user:+ as $user}"
+  if [[ -n $user ]]; then
+    sudo -u "$user" mkdir -p "$(dirname "$link")"
+    sudo -u "$user" ln -sf "$target" "$link"
+  else
+    mkdir -p "$(dirname "$link")"
+    ln -sf "$target" "$link"
+  fi
+
+  return 1
+}
+
+ensure_service_enabled() {
+  local service="$1"
+  systemctl is-enabled "$service" &>/dev/null && return 0
+
+  log "enabling $service"
+  systemctl enable "$service"
+  return 1
+}
+
+script_dir() {
+  # [1] = caller; [0] would be ourselves
+  realpath "$(dirname "${BASH_SOURCE[1]}")"
 }

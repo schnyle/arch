@@ -1,8 +1,6 @@
 : "${time_zone:=}"
 
 configure() {
-  require_var time_zone
-
   local changed=0
 
   if [[ $(readlink /mnt/etc/localtime) != "$time_zone" ]]; then
