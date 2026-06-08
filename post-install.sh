@@ -1,5 +1,6 @@
 host="$1"
-repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+repo_root="$2"
+
 source "$repo_root/lib/init.sh"
 
 pacman_packages=()
