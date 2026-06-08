@@ -3,9 +3,6 @@ host="$1"
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$repo_root/lib/init.sh"
 
-install_modules=()
-load_modules "$host_dir/install" install_modules
-
 log "starting install"
 install_device=$(get_install_device)
 validate_required_vars "install" "${install_modules[@]}"

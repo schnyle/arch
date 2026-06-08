@@ -6,5 +6,4 @@ for f in "$repo_root"/lib/*.sh; do
   source "$f"
 done
 
-host_dir="$repo_root/hosts/$host"
-source "$host_dir/vars.sh"
+source "$repo_root/hosts/$host.sh"

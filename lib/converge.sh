@@ -2,12 +2,6 @@
 
 : "${repo_root:=}"
 
-load_modules() {
-  local file="$1"
-  local -n _out="$2"
-  mapfile -t _out < <(grep -Ev '^\s*(#|$)' "$file")
-}
-
 validate_required_vars() {
   local phase="$1"
   shift
