@@ -31,4 +31,5 @@ in virt-manager:
 
 - Memory > Enable shared memory
 - Add Hardware > Filesystem
-- On VM: `mkdir /mnt/new-dir` & `mount -t virtiofs arch-repo /mnt/arch-repo`
+  - Target path: arch-install
+- On VM: `mkdir /arch-install` & `mount -t virtiofs arch-install /arch-install`
