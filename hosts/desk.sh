@@ -30,47 +30,44 @@ post_install_modules=(
   home-dirs
   networkmanager
   yay
+  alacritty
+  arandr
+  desk-displays
+  git
+  gtk
+  i3
+  latex
+  minesweeper
+  neovim
   # nvidia
   ohmyzsh
-  # virtualization
-  compositor
-  minesweeper
-  git
-  zsh
-  pulseaudio
-  dotfiles
-  ssh-key
-  desk-displays
-  gtk
   pavucontrol
-  arandr
-  latex
-  i3
+  # picom
+  pulseaudio
+  qutebrowser
+  ssh-key
+  tmux
+  # virtualization
+  xorg
+  zsh
 )
 
 pacman_packages=(
   adobe-source-code-pro-fonts
-  alacritty
   alsa-utils
   bitwarden
   cmake
   inetutils
   less
   man-db
-  npm
   openssh
   qmk
-  qutebrowser
   rsync
   sof-firmware
-  tmux
   tree
   vi
   vim
   virtiofsd
-  xorg-server
-  xorg-xinit
-  xorg-xset
   unzip
   wget
   xclip

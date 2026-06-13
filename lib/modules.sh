@@ -1,3 +1,10 @@
+: "${system_user:=}"
+
+script_dir() {
+  # [1] = caller; [0] would be ourselves
+  realpath "$(dirname "${BASH_SOURCE[1]}")"
+}
+
 ensure_directory() {
   local user=
   if [[ $1 == "-u" ]]; then
@@ -41,6 +48,15 @@ ensure_file_content() {
   fi
 
   return 1
+}
+
+ensure_dotfile() {
+  local src="$1"
+  local dest="$2"
+  local module="${3:-$(basename "$(dirname "$src")")}"
+
+  ensure_symlink -u "$system_user" "$src" "/home/$system_user/.dotfiles/$module/$(basename "$src")"
+  ensure_symlink -u "$system_user" "$src" "$dest"
 }
 
 ensure_file_permissions() {
@@ -107,9 +123,4 @@ ensure_service_enabled() {
   log "enabling $service"
   systemctl enable "$service"
   return 1
-}
-
-script_dir() {
-  # [1] = caller; [0] would be ourselves
-  realpath "$(dirname "${BASH_SOURCE[1]}")"
 }

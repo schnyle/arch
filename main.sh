@@ -11,10 +11,8 @@ init_logging "$log_file"
 if [[ -n $is_live_env ]]; then
   bash "$repo_root/install.sh" "$host" "$repo_root"
 
-  chroot_repo_root="/mnt$repo_root"
-  mkdir -p "$chroot_repo_root"
-  mount --bind "$repo_root" "$chroot_repo_root"
-  trap "umount $chroot_repo_root" EXIT
+  mkdir -p "/mnt$repo_root"
+  cp -a "$repo_root/." "/mnt$repo_root"
   arch-chroot /mnt bash "$repo_root/post-install.sh" "$host" "$repo_root"
 else
   bash "$repo_root/post-install.sh" "$host" "$repo_root"

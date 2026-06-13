@@ -1,0 +1,24 @@
+general {
+        output_format = "i3bar"
+        colors = true
+        interval = 5
+}
+
+order += "disk /"
+order += "memory"
+order += "cpu_usage"
+order += "time"
+order += "cpu_temperature"
+
+disk "/" {
+        format = "D: %used / %total (%percentage_used)"
+}
+
+memory {
+        format = "M: %used / %total (%percentage_used)"
+        threshold_critical = "5%"
+}
+
+cpu_usage {
+        format = "C: %usage"
+}
