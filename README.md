@@ -1,6 +1,6 @@
 # Arch
 
-Automated Arch Linux install scripts targeting multiple machine types.
+Idempotent, modular Arch Linux installer for composing and building bespoke system.
 
 OS bootstrapping built on top of the [Arch Installation Guide](https://wiki.archlinux.org/title/Installation_guide).
 

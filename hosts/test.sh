@@ -1,5 +1,6 @@
 # shellcheck disable=SC2034
 
+is_live_env=1
 boot_size="512M"
 swap_size="2G"
 time_zone="/usr/share/zoneinfo/America/Denver"
@@ -13,19 +14,23 @@ post_install_modules=(
   user
   home-dirs
   networkmanager
-  yay
-  # nvidia
-  ohmyzsh
-  # virtualization
-  compositor
-  minesweeper
-  git
-  zsh
-  pulseaudio
+  neovim
+  xserver
+  i3
+  # yay
+  # # nvidia
+  # ohmyzsh
+  # # virtualization
+  # compositor
+  # minesweeper
+  # git
+  # zsh
+  # pulseaudio
+  # dotfiles
+  # ssh-key
+  # desk-displays
+  # gtk
+  # pavucontrol
+  # arandr
   dotfiles
-  ssh-key
-  desk-displays
-  gtk
-  pavucontrol
-  arandr
 )

@@ -57,7 +57,6 @@ pacman_packages=(
   inetutils
   less
   man-db
-  neovim
   npm
   openssh
   qmk
@@ -68,11 +67,11 @@ pacman_packages=(
   tree
   vi
   vim
+  virtiofsd
   xorg-server
   xorg-xinit
   xorg-xset
   unzip
   wget
   xclip
-
 )

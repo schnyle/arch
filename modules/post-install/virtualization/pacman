@@ -7,4 +7,5 @@ openbsd-netcat
 dmidecode
 libguestfs
 edk2-ovmf
+virtiofsd
 
