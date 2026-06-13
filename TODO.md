@@ -20,6 +20,7 @@
 - extend `ensure_file_content`, `ensure_symlink`, `ensure_directory` (etc.) to take an optional owner arg. Helper would chown the target file/link AND any parent dirs it created (via mkdir -p). Eliminates the chown-parent + chown-file dance currently repeated across gtk, pulseaudio, desk-displays modules
 - make path resolution context-aware so the installer can run from: the live USB install env (paths need `/mnt` prefix), the booted system as root (no prefix for system-level state), or the booted system as user (no prefix, user-scoped state only). Currently `/mnt` is hardcoded everywhere
 - could make gtk module a dotfile
+- module conventions linter: once the `module.sh` contract stabilizes, add a `scripts/lint-modules.sh` driven by a git pre-commit hook to catch silent failures — missing `module.sh`, modules declaring neither `pacman_packages` nor `configure`, malformed `dotfiles` entries, hosts referencing non-existent modules, unknown top-level variables in `module.sh` (catches typos by diffing the declared set against the known contract)
 
 ## virtiofs
 

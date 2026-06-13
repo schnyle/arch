@@ -1,3 +1,9 @@
+pacman_packages=(
+  git
+  nvim
+  zsh
+)
+
 : "${my_var:=}"
 
 configure() {

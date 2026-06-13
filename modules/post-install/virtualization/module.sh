@@ -1,3 +1,16 @@
+pacman_packages=(
+  qemu-full
+  virt-manager
+  virt-viewer
+  dnsmasq
+  vde2
+  openbsd-netcat
+  dmidecode
+  libguestfs
+  edk2-ovmf
+  virtiofsd
+)
+
 # virtualization stack is installed; libvirtd is enabled and user is a member of the libvirtd group.
 
 : "${system_user:=}"

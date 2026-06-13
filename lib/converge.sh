@@ -8,11 +8,11 @@ validate_required_vars() {
 
   local declared=()
   for m in "$@"; do
-    local configure_file="$repo_root/modules/$phase/$m/configure.sh"
-    [[ -f "$configure_file" ]] || continue
+    local module_file="$repo_root/modules/$phase/$m/module.sh"
+    [[ -f "$module_file" ]] || continue
     while IFS= read -r var; do
       declared+=("$var")
-    done < <(grep -oP '^\s*:\s*"\$\{\K[a-zA-Z_][a-zA-Z_0-9]*' "$configure_file")
+    done < <(grep -oP '^\s*:\s*"\$\{\K[a-zA-Z_][a-zA-Z_0-9]*' "$module_file")
   done
 
   local missing=()
@@ -23,6 +23,15 @@ validate_required_vars() {
   [[ ${#missing[@]} -gt 0 ]] && die "host missing required vars: ${missing[*]}"
 }
 
+run_configure() {
+  local module_file="$1"
+  (
+    source "$module_file"
+    declare -f configure >/dev/null || exit 0
+    configure
+  )
+}
+
 converge_modules_ordered() {
   local phase="$1"
   shift
@@ -30,12 +39,11 @@ converge_modules_ordered() {
   local max_attempts=5
 
   for m in "$@"; do
-    local configure_file="$repo_root/modules/$phase/$m/configure.sh"
-    [[ ! -f "$configure_file" ]] && continue
-    source "$configure_file"
+    local module_file="$repo_root/modules/$phase/$m/module.sh"
+    [[ ! -f "$module_file" ]] && continue
 
     local attempts=0
-    until configure; do
+    until run_configure "$module_file"; do
       attempts=$((attempts + 1))
       [[ $attempts -ge $max_attempts ]] && die "$m module failed after $attempts attempts"
 
@@ -58,11 +66,10 @@ converge_modules_unordered() {
   while true; do
     local changes=0
     for m in "$@"; do
-      local configure_file="$repo_root/modules/$phase/$m/configure.sh"
-      [[ ! -f "$configure_file" ]] && continue
-      source "$configure_file"
+      local module_file="$repo_root/modules/$phase/$m/module.sh"
+      [[ ! -f "$module_file" ]] && continue
 
-      if ! configure; then
+      if ! run_configure "$module_file"; then
         changes=$((changes + 1))
         attempts[$m]=$((${attempts[$m]:-0} + 1))
         [[ ${attempts[$m]} -ge $max_attempts ]] && die "$m module failed after ${attempts[$m]} attempts"

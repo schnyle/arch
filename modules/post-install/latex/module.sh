@@ -1,3 +1,4 @@
+pacman_packages=(
   texlive-latex
   texlive-basic
   texlive-binextra
@@ -7,3 +8,4 @@
   texlab
   zathura
   zathura-pdf-mupdf
+)

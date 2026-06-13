@@ -1,0 +1,3 @@
+pacman_packages=(
+  picom
+)

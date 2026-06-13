@@ -1,3 +1,7 @@
+pacman_packages=(
+  git
+)
+
 # git is installed with user.name and user.email configured.
 
 : "${system_user:=}"

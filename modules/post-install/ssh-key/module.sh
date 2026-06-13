@@ -1,3 +1,7 @@
+pacman_packages=(
+  openssh
+)
+
 # An ed25519 SSH key is setup with proper file permissions.
 
 : "${system_user:=}"

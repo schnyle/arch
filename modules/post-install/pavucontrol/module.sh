@@ -1,3 +1,7 @@
+pacman_packages=(
+  pavucontrol
+)
+
 # pavucontrol is installed and has symlink.
 
 configure() {

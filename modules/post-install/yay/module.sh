@@ -1,3 +1,8 @@
+pacman_packages=(
+  base-devel
+  git
+)
+
 # yay (AUR helper) is cloned, built, and installed
 
 : "${system_user:=}"

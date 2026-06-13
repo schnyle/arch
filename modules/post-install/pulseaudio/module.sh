@@ -1,3 +1,7 @@
+pacman_packages=(
+  pulseaudio
+)
+
 # pulseaudio is installed and enabled.
 
 : "${system_user:=}"

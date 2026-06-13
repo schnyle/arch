@@ -1,3 +1,7 @@
+pacman_packages=(
+  zsh
+)
+
 # zsh is installed and set as default shell.
 
 : "${system_user:=}"

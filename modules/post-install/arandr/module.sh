@@ -1,3 +1,7 @@
+pacman_packages=(
+  arandr
+)
+
 # arandr is installed and has a 'displays' symlink in /usr/local/bin.
 
 configure() {

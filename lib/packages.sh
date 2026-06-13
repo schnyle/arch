@@ -1,12 +1,17 @@
+: "${repo_root:=}"
+
 get_pacman_packages() {
   local -n _out="$1"
   shift
 
   mapfile -t _out < <(
     for module in "$@"; do
-      local pacman_file="$repo_root/modules/post-install/$module/pacman"
-      [[ -f "$pacman_file" ]] || continue
-      awk '!/^\s*(#|$)/ {print $1}' "$pacman_file"
+      local module_file="$repo_root/modules/post-install/$module/module.sh"
+      [[ -f "$module_file" ]] || continue
+      (
+        source "$module_file"
+        [[ ${#pacman_packages[@]} -gt 0 ]] && printf '%s\n' "${pacman_packages[@]}"
+      )
     done | sort -u
   )
 }

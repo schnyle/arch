@@ -1,0 +1,10 @@
+pacman_packages=(
+  alacritty
+  i3-wm
+  i3blocks
+  i3lock
+  i3status
+  xorg-server
+  xorg-xinit
+  xorg-xset
+)

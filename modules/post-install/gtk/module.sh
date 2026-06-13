@@ -1,3 +1,7 @@
+pacman_packages=(
+  gnome-themes-extra
+)
+
 # GTK applications use the Adwaita-dark theme.
 
 : "${system_user:=}"

@@ -1,3 +1,8 @@
+pacman_packages=(
+  git
+  stow
+)
+
 # Dotfiles are cloned and stowed.
 
 : "${system_user:=}"

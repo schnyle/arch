@@ -1,3 +1,8 @@
+pacman_packages=(
+  git
+  zsh
+)
+
 # oh-my-zsh is installed.
 
 : "${system_user:=}"
