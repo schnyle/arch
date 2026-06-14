@@ -10,8 +10,9 @@ module_packages=()
 get_pacman_packages module_packages "${post_install_modules[@]}"
 pacman_packages+=("${module_packages[@]}")
 mapfile -t pacman_packages < <(printf '%s\n' "${pacman_packages[@]}" | sort -u | grep .)
-if [[ ${#post_install_modules[@]} -gt 0 || ${#pacman_packages[@]} -gt 0 ]]; then
+handle_unknown_pacman_packages pacman_packages
 
+if [[ ${#post_install_modules[@]} -gt 0 || ${#pacman_packages[@]} -gt 0 ]]; then
   [[ ${#pacman_packages[@]} -gt 0 ]] && install_pacman_packages "${pacman_packages[@]}"
   [[ ${#post_install_modules[@]} -gt 0 ]] && converge_modules_unordered post-install "${post_install_modules[@]}"
 else

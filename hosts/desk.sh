@@ -61,11 +61,11 @@ pacman_packages=(
   less
   man-db
   openssh
+  qbittorrent
   qmk
   rsync
   sof-firmware
   tree
-  vi
   vim
   virtiofsd
   unzip
