@@ -4,6 +4,20 @@ Idempotent, modular Arch Linux installer for composing and building bespoke syst
 
 OS bootstrapping built on top of the [Arch Installation Guide](https://wiki.archlinux.org/title/Installation_guide).
 
+## Usage
+
+From the Arch live environment:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/schnyle/arch/refactor/composable-modules/bootstrap.sh | bash
+```
+
+Or specify a host directly:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/schnyle/arch/refactor/composable-modules/bootstrap.sh | bash -s -- atlas
+```
+
 ## Architecture
 
 The install is composed from small, reusable pieces with clear roles:

@@ -107,10 +107,10 @@ ensure_symlink() {
   log "linking $link -> $target${user:+ as $user}"
   if [[ -n $user ]]; then
     sudo -u "$user" mkdir -p "$(dirname "$link")"
-    sudo -u "$user" ln -sf "$target" "$link"
+    sudo -u "$user" ln -sfn "$target" "$link"
   else
     mkdir -p "$(dirname "$link")"
-    ln -sf "$target" "$link"
+    ln -sfn "$target" "$link"
   fi
 
   return 1
