@@ -11,12 +11,8 @@ configure() {
   local prefix
   prefix=$(partition_prefix "$install_device")
 
-  mounts_active "$prefix" && return 0
-
   log "mounting partitions"
   mount "${prefix}3" /mnt
   mount --mkdir "${prefix}1" /mnt/boot
   swapon "${prefix}2"
-
-  return 1
 }
