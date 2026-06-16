@@ -24,15 +24,6 @@ partitions_has_expected_layout() {
 }
 
 configure() {
-  partitions_has_expected_layout "$install_device" && return 0
-
-  if lsblk -n "$install_device" | grep -q part; then
-    log "removing partitions from $install_device"
-    wipefs -a "$install_device"
-  fi
-
   log "writing partition layout to $install_device"
-  partitions_layout | sfdisk "$install_device"
-
-  return 1
+  partitions_layout | sfdisk --wipe-partitions=always "$install_device"
 }
