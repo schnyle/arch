@@ -20,4 +20,4 @@ fi
 
 log "done"
 
-[[ -n $is_live_env ]] && cp "$log_file" "/mnt$log_file"
+[[ -n $is_live_env ]] && mountpoint -q /mnt && cp "$log_file" "/mnt$log_file"

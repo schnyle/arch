@@ -9,13 +9,7 @@ OS bootstrapping built on top of the [Arch Installation Guide](https://wiki.arch
 From the Arch live environment:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/schnyle/arch/refactor/composable-modules/bootstrap.sh | bash
-```
-
-Or specify a host directly:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/schnyle/arch/refactor/composable-modules/bootstrap.sh | bash -s -- atlas
+curl -fsSL https://raw.githubusercontent.com/schnyle/arch/main/bootstrap.sh | bash
 ```
 
 ## Architecture

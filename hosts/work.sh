@@ -1,5 +1,7 @@
 # shellcheck disable=SC2034
 
+# NOT CURRENT - 15 JUNE 2026
+
 time_zone="/usr/share/zoneinfo/America/Denver"
 system_user="kyle"
 git_name="Kyle"

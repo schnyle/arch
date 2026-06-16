@@ -31,10 +31,7 @@ Be terse. I read every word, so every word should earn its place.
 ## Project
 
 Arch Linux install automation targeting multiple machine types (personal
-workstation, atlas home server, rpi-tv kiosk). Currently refactoring from
-monolithic install scripts toward a composable module architecture.
-
-See `docs/refactor-plan.md` for the full architecture and module design.
+workstation, atlas home server, rpi-tv kiosk).
 
 ## Design Principles
 
