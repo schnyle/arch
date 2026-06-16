@@ -1,0 +1,11 @@
+pacman_packages=(
+  texlive-latex
+  texlive-basic
+  texlive-binextra
+  texlive-latexrecommended
+  texlive-mathscience
+  texlive-latexextra
+  texlab
+  zathura
+  zathura-pdf-mupdf
+)
