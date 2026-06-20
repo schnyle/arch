@@ -12,7 +12,6 @@ post_install_modules=(
   ohmyzsh
   git
   zsh
-  dotfiles
   # ssh-key
   i3
   yay

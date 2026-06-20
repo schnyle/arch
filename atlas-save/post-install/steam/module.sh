@@ -1,5 +1,11 @@
+pacman_packages=(
+  steam
+)
+
 configure() {
   local changed=0
+
+  grep -q "^\[multilib\]" /etc/pacman.conf && return 0
 
   if ! grep -q "^\[multilib\]" /etc/pacman.conf; then
     log "enabling 32-bit libraries"
@@ -10,12 +16,6 @@ configure() {
   if [[ ! -f /var/lib/pacman/sync/multilib.db ]]; then
     log "syncing pacman database"
     pacman -Sy
-    changed=1
-  fi
-
-  if ! pacman -Q steam &>/dev/null; then
-    log "installing steam"
-    pacman -S --noconfirm steam
     changed=1
   fi
 

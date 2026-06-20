@@ -1,6 +1,5 @@
 # shellcheck disable=SC2034
 
-is_live_env=1
 boot_size="512M"
 swap_size="2G"
 time_zone="/usr/share/zoneinfo/America/Denver"
@@ -9,21 +8,6 @@ system_user="kyle"
 git_name="kyle"
 email="kylesch115@gmail.com"
 temp_sudoersd_file="/etc/sudoers.d/temp_install"
-
-install_modules=(
-  partitions
-  filesystems
-  mounts
-  essential-packages
-  multilib
-  mirrors
-  fstab
-  time
-  localization
-  hostname
-  root_password
-  bootloader
-)
 
 post_install_modules=(
   user
@@ -34,10 +18,14 @@ post_install_modules=(
   arandr
   desk-displays
   git
+  grub
   gtk
+  hostname
   i3
   latex
+  localization
   minesweeper
+  mirrors
   neovim
   # nvidia
   ohmyzsh
@@ -45,7 +33,9 @@ post_install_modules=(
   # picom
   pulseaudio
   qutebrowser
+  root-password
   ssh-key
+  time
   tmux
   # virtualization
   xorg

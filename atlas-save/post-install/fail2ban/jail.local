@@ -1,0 +1,19 @@
+[DEFAULT]
+# ban for 10 minutes
+bantime = 10m
+
+# check for failures in last 10 minutes
+findtime = 10m
+
+# ban after 5 failures
+maxretry = 5
+
+# use ufw for banning
+banaction = ufw
+
+# use systemd journal instead of log files
+backend = systemd
+
+[sshd]
+enabled = true
+port = __SSH_PORT__
