@@ -1,13 +1,16 @@
 # shellcheck disable=SC2034
 
-boot_size="512M"
-swap_size="2G"
 time_zone="/usr/share/zoneinfo/America/Denver"
 hostname="desk$(date '+%Y%m%d')"
 system_user="kyle"
 git_name="kyle"
 email="kylesch115@gmail.com"
 temp_sudoersd_file="/etc/sudoers.d/temp_install"
+partition_layout=(
+  "512M:fat32:/boot"
+  "2G:swap:swap"
+  ":ext4:/"
+)
 
 post_install_modules=(
   user

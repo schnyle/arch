@@ -1,6 +1,8 @@
 #!/bin/bash
 
-for dir in atlas personal; do
-  scripts/generate-procedure.sh "$dir"
-  scripts/generate-sha256sum.sh "$dir"
-done
+scripts/lint/lint.sh || exit 1
+
+# for dir in atlas personal; do
+#   scripts/generate-procedure.sh "$dir"
+#   scripts/generate-sha256sum.sh "$dir"
+# done

@@ -14,44 +14,6 @@
 10. update docs/module-contract.md
 11. update modules to check any preconditions (modules requiring running commands as user should first check that the user exists) - could be a speparate todo item from this refactor
 
-## Phases
-
-- **bootstrap**: ordered, run-once, live-env, fail-fast. Separate process,
-  not part of the convergent loop.
-- **modules**: convergent, idempotent, looped. (was: post-install. install
-  modules go away — everything left is just a "module".)
-
-Principle: a thing lives in bootstrap only if it _must_ (ordered, run-once,
-can't converge). Everything else is a convergent module. Strong default = module.
-
-## install modules → bootstrap (ordered)
-
-partitions, filesystems, mounts, essential-packages, fstab, bootloader.
-order: partition → format → mount → pacstrap → fstab → bootloader.
-
-## install modules → modules (convergent)
-
-hostname, localization, time, root_password, mirrors — drop `/mnt` + `arch-chroot`.
-(mirrors only sets up reflector.timer; doesn't gate install.)
-multilib: folded into steam module (steam-only; enable + install imperatively).
-
-## Entrypoint
-
-- `bootstrap.sh` → renamed `run.sh` (the curl-and-clone seed). Frees
-  "bootstrap" for the phase above.
-
-## Entry / live-env detection
-
-- Detect at runtime with `[[ -d /run/archiso ]]`; delete declared `is_live_env`
-  (it's wrong-by-construction on the installed system → accidental wipe).
-- Not live (booted / docker) → converge loop, native, no chroot.
-- Live + fresh → bootstrap (destructive) → converge in `arch-chroot /mnt`.
-- Live + repair → run only non-destructive prefix (`mount_disk`) → converge in
-  chroot. Prompt at entry: bootstrap (wipes) vs converge existing.
-- Split bootstrap into destructive (partition/format/pacstrap) vs
-  non-destructive (mount) so the prefix is callable alone.
-- Modules stay chroot-agnostic; only the driver wraps `arch-chroot`.
-
 ## Layout data
 
 - Ordered indexed array of `:`-delimited records; order = partition number.
