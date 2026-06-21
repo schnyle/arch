@@ -1,13 +1,16 @@
 # shellcheck disable=SC2034
 
-boot_size="512M"
-swap_size="2G"
-root_size="32G"
 time_zone="/usr/share/zoneinfo/America/Denver"
 hostname="atlas$(date '+%Y%m%d')"
 system_user="atlas"
 temp_sudoersd_file="/etc/sudoers.d/temp_install"
 ssh_port=2222
+partition_layout=(
+  "512M:fat32:/boot"
+  "2G:swap:swap"
+  "32G:ext4:/"
+  ":ext4:/storage"
+)
 
 post_install_modules=(
   atlas-snapshot
