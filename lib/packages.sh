@@ -6,7 +6,7 @@ get_pacman_packages() {
 
   mapfile -t _out < <(
     for module in "$@"; do
-      local module_file="$repo_root/modules/post-install/$module/module.sh"
+      local module_file="$repo_root/modules/$module/module.sh"
       [[ -f "$module_file" ]] || continue
       (
         source "$module_file"

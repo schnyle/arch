@@ -10,7 +10,7 @@ for host_file in "$repo_root"/hosts/*.sh; do
     (
       source "$host_file"
       for module in "${post_install_modules[@]}"; do
-        f="$repo_root/modules/post-install/$module/pacman"
+        f="$repo_root/modules/$module/pacman"
         [[ -f "$f" ]] && awk '!/^\s*(#|$)/ {print $1}' "$f"
       done
       printf '%s\n' "${pacman_packages[@]}"
@@ -29,7 +29,7 @@ for host_file in "$repo_root"/hosts/*.sh; do
 
   max_len=0
   for pkg in "${packages[@]}"; do
-    (( ${#pkg} > max_len )) && max_len=${#pkg}
+    ((${#pkg} > max_len)) && max_len=${#pkg}
   done
 
   {
@@ -38,7 +38,7 @@ for host_file in "$repo_root"/hosts/*.sh; do
     for pkg in "${packages[@]}"; do
       printf "%-*s # %s\n" "$max_len" "$pkg" "${descs[$pkg]:-(no description)}"
     done
-  } > "$out_dir/$host.md"
+  } >"$out_dir/$host.md"
 
   echo "wrote $out_dir/$host.md"
 done
