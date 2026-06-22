@@ -12,7 +12,7 @@ partition_layout=(
   ":ext4:/"
 )
 
-post_install_modules=(
+modules=(
   user
   home-dirs
   networkmanager

@@ -1,4 +1,4 @@
-: "${post_install_modules:=}"
+: "${modules:=}"
 : "${temp_sudoersd_file:=}"
 
 host="$1"
@@ -7,14 +7,14 @@ repo_root="$2"
 source "$repo_root/lib/init.sh"
 
 module_packages=()
-get_pacman_packages module_packages "${post_install_modules[@]}"
+get_pacman_packages module_packages "${modules[@]}"
 pacman_packages+=("${module_packages[@]}")
 mapfile -t pacman_packages < <(printf '%s\n' "${pacman_packages[@]}" | sort -u | grep .)
 handle_unknown_pacman_packages pacman_packages
 
-if [[ ${#post_install_modules[@]} -gt 0 || ${#pacman_packages[@]} -gt 0 ]]; then
+if [[ ${#modules[@]} -gt 0 || ${#pacman_packages[@]} -gt 0 ]]; then
   [[ ${#pacman_packages[@]} -gt 0 ]] && install_pacman_packages "${pacman_packages[@]}"
-  [[ ${#post_install_modules[@]} -gt 0 ]] && converge_modules "${post_install_modules[@]}"
+  [[ ${#modules[@]} -gt 0 ]] && converge_modules "${modules[@]}"
 else
   log "nothing to do, skipping"
 fi

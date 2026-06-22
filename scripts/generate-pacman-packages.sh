@@ -9,7 +9,7 @@ for host_file in "$repo_root"/hosts/*.sh; do
   mapfile -t packages < <(
     (
       source "$host_file"
-      for module in "${post_install_modules[@]}"; do
+      for module in "${modules[@]}"; do
         f="$repo_root/modules/$module/pacman"
         [[ -f "$f" ]] && awk '!/^\s*(#|$)/ {print $1}' "$f"
       done

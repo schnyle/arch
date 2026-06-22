@@ -1,5 +1,5 @@
 # System user exists with password, wheel group membership, and a temporary
-# passwordless-sudo entry (removed at the end of post-install.sh).
+# passwordless-sudo entry (removed at the end of converge.sh).
 
 : "${system_user:=}"
 : "${temp_sudoersd_file:=}"

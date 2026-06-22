@@ -12,7 +12,7 @@ partition_layout=(
   ":ext4:/storage"
 )
 
-post_install_modules=(
+modules=(
   root-password
   user
   home-dirs
