@@ -1,41 +1,26 @@
 # Module contract
 
-A **module** is a self-contained unit of system setup — a directory under `modules/install/` or `modules/post-install/` that declares the packages to install, files to place, and any imperative configuration logic.
+A **module** is a self-contained unit of system setup — a directory under `modules/` that declares the packages to install, files to place, and any imperative configuration logic.
 
 ## Directory layout
 
 ```
-modules/<phase>/<name>/
+modules/<name>/
   module.sh        # required — declarations + configure() function
   <config files>   # optional — referenced by configure()
 ```
 
-The directory name (`<name>`) is the module's identity. The phase (`install/` or `post-install/`) determines when the driver invokes it.
+The directory name (`<name>`) is the module's identity. Since all modules live at the same directory level, there can be no duplicate module names.
 
 ## `module.sh` contract
 
-A `module.sh` may declare any subset of:
+A `module.sh` may declare:
 
-- `pacman_packages=()` — array of packages to install during this module's phase
-- `dotfiles=()` — array of `src:dest` strings (see format below)
+- `pacman_packages=()` — array of pacman packages to install
 - `configure()` — function the driver runs after packages install
-- At least one of `pacman_packages` or `configure` must be present.
 
-## `dotfiles` format
+At least one of `pacman_packages` or `configure` must be present.
 
-A regular array of `src:dest` strings:
+## `lib/modules.sh`
 
-```bash
-dotfiles=(
-  "init.lua:.config/nvim/init.lua"
-  "lua/plugins.lua:.config/nvim/lua/plugins.lua"
-)
-```
-
-- `src` is a path relative to the module directory.
-- `dest` is a path relative to the system user's home directory.
-- `:` delimiter assumes paths don't contain colons. Switch to `|` or tab if that ever bites.
-
-## Related
-
-- `TODO.md` — planned module conventions linter to enforce this contract automatically.
+The `lib/modules.sh` provides a family of idempotent helper functions for regular configuration logic a module may desire. Prefer using these over writing new logic.
