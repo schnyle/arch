@@ -1,9 +1,0 @@
-[Unit]
-Description=Atlas storage snapshot backup
-
-[Service]
-Type=oneshot
-User=__SYSTEM_USER__
-ExecStart=/usr/local/bin/atlas-snapshot
-StandardOutput=journal
-StandardError=journal

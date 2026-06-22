@@ -7,7 +7,7 @@
 3. ~remove modules/install/ and modules/post-install. all modules will now be under modules/. remove modules/\_template.~
 4. ~convert hostname, localization, time, root_password, mirrors, bootloader to post-install modules (note: bootloader requires code updates — idempotency + drop chroot/`/mnt` prefixes)~
 5. ~move multilib module into steam: steam installs imperatively in configure() and drops out of the declared-package bulk install (the one convention exception)~
-6. create new module for snapshots disk
+6. ~create new module for snapshots disk~
 7. collapse orchestration: main.sh + install.sh + post-install.sh → run bootstrap, then run the module loop. probably delete converge_modules_ordered (bootstrap.sh is its own ordered script). fix validate_required_vars phase arg. get_pacman_packages still walks modules/
 8. rewrite each hosts/\*.sh: drop install_modules, add partition_layout, merge moved modules into the single module list. atlas layout = desk + storage row. confirm work.sh skips bootstrap (docker host)
 9. ~replace declared is_live_env with runtime detection (`[[ -d /run/archiso ]]`); add three-way entry branch (not-live → converge native; live+fresh → bootstrap; live+repair → mount_disk then converge in chroot); split bootstrap destructive/non-destructive~
