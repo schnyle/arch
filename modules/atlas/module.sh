@@ -69,8 +69,13 @@ configure() {
     changed=1
   fi
 
+  if [[ ! -L /snapshots/latest ]]; then
+    log "bootstrapping latest snapshot pointer"
+    ln -sfn /snapshots/initial /snapshots/latest
+    changed=1
+  fi
+
   # atlas-snapshot script
-  ensure_symlink /snapshots/initial /snapshots/latest || changed=1
   ensure_file_ownership -R "$system_user:$system_user" /snapshots || changed=1
   ensure_file_content "$(script_dir)/atlas-snapshot" /usr/local/bin/atlas-snapshot || changed=1
   ensure_file_ownership root:root /usr/local/bin/atlas-snapshot || changed=1
