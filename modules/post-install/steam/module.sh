@@ -1,3 +1,0 @@
-pacman_packages=(
-  steam
-)

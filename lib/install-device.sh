@@ -14,9 +14,9 @@ select_install_device() {
   local install_device
   while true; do
     echo "available devices:" >&2
-    lsblk -d -n -o NAME,SIZE,TYPE >&2
+    lsblk -d -o NAME,SIZE,TYPE >&2
     echo >&2
-    read -r -p "enter device name: " install_device
+    read -r -p "enter device name (omit '/dev/'): " install_device
     install_device="/dev/$install_device"
 
     [[ -b "$install_device" ]] && break

@@ -1,17 +1,48 @@
-: "${install_modules:=}"
+[[ $EUID -ne 0 ]] && exec sudo "$0" "$@"
 
-host="$1"
-repo_root="$2"
+repo_root="/arch-install"
 
-source "$repo_root/lib/init.sh"
+# parse args
+skip_clone=
+branch="main"
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+  --skip-clone)
+    skip_clone=1
+    shift
+    ;;
+  --branch)
+    branch="$2"
+    if [[ -z "$branch" ]]; then
+      echo "--branch requires a value" && exit 1
+    fi
+    shift 2
+    ;;
+  -*)
+    echo "unknown option: $1" && exit 1
+    ;;
+  *)
+    host="$1"
+    shift
+    ;;
+  esac
+done
 
-log "starting install"
-
-if [[ ${#install_modules[@]} -gt 0 ]]; then
-  install_device=$(get_install_device)
-  validate_required_vars "install" "${install_modules[@]}"
-  log "installing to $install_device"
-  converge_modules_ordered install "${install_modules[@]}"
+# clone repo
+if [[ -n $skip_clone ]]; then
+  if [[ ! -d "$repo_root/.git" ]]; then
+    echo "Error: repository not found at $repo_root"
+    exit 1
+  fi
 else
-  log "nothing to do, skipping"
+  if mountpoint -q "$repo_root"; then
+    echo "Error: $repo_root is a mount point. Use --skip-clone or unmount first" && exit 1
+  fi
+  rm -rf "$repo_root"
+
+  pacman -Sy
+  pacman -S --noconfirm --needed git
+  git clone --branch="$branch" https://github.com/schnyle/arch.git "$repo_root"
 fi
+
+bash "$repo_root/run/main.sh" "$repo_root" "$host"

@@ -1,40 +1,31 @@
 # shellcheck disable=SC2034
 
-is_live_env=1
-boot_size="512M"
-swap_size="2G"
-root_size="32G"
-time_zone="/usr/share/zoneinfo/America/Denver"
 hostname="atlas$(date '+%Y%m%d')"
+ssh_port=2222
 system_user="atlas"
 temp_sudoersd_file="/etc/sudoers.d/temp_install"
-ssh_port=2222
-
-install_modules=(
-  atlas-partitions
-  atlas-filesystems
-  atlas-mounts
-  atlas-snapshot-device
-  essential-packages
-  multilib
-  mirrors
-  fstab
-  time
-  localization
-  hostname
-  root_password
-  bootloader
+time_zone="/usr/share/zoneinfo/America/Denver"
+disk_layout=(
+  "512M:fat32:/boot"
+  "2G:swap:swap"
+  "32G:ext4:/"
+  ":ext4:/storage"
 )
 
-post_install_modules=(
+modules=(
+  root-password
   user
   home-dirs
+  atlas
   avahi
-  networkmanager
-  atlas-snapshot
-  atlas-storage-dirs
   fail2ban
+  grub
+  hostname
+  localization
+  mirrors
+  networkmanager
   sshd
+  time
   ufw
 )
 

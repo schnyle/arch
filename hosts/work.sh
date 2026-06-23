@@ -7,12 +7,11 @@ system_user="kyle"
 git_name="Kyle"
 email="Kyle.Schneider@charter.com"
 
-post_install_modules=(
+modules=(
   home-dirs
   ohmyzsh
   git
   zsh
-  dotfiles
   # ssh-key
   i3
   yay
