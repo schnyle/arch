@@ -35,7 +35,6 @@ init_logging "$log_file"
 if [[ -d /run/archiso ]]; then
   read -rp "live ISO detected - run bootstrapping (disk setup and fstab generation)? (yes/no): " ans
   if [[ $ans == "yes" ]]; then
-    install_device=$(get_install_device)
     (source "$repo_root/run/bootstrap.sh") || die "bootstrap failed"
   fi
 

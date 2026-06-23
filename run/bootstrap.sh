@@ -1,8 +1,17 @@
-: "${install_device:=}"
 : "${partition_layout:=}"
 
 max_attempts=5
+
+# prompt user for installation device
+install_device=$(get_install_device)
 install_device_prefix=$(partition_prefix "$install_device")
+
+if [[ -n $(wipefs -n "$install_device") ]]; then
+  while read -r part; do
+    wipefs -a "$part"
+  done < <(lsblk -lnpo NAME "$install_device" | tail -n +2)
+  sgdisk -Z "$install_device"
+fi
 
 # partition the disk
 
@@ -82,8 +91,8 @@ make_filesystem() {
 
   case $fstype in
   fat32) mkfs.fat -F32 "$device" ;;
-  ext4) mkfs.ext4 "$device" ;;
-  swap) mkswap "$device" ;;
+  ext4) mkfs.ext4 -F "$device" ;;
+  swap) mkswap -f "$device" ;;
   *) die "unknown fstype: $fstype" ;;
   esac
 }
