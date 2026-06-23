@@ -4,11 +4,22 @@ repo_root="/arch-install"
 
 # parse args
 skip_clone=
+branch="main"
 while [[ $# -gt 0 ]]; do
   case "$1" in
   --skip-clone)
     skip_clone=1
     shift
+    ;;
+  --branch)
+    branch="$2"
+    if [[ -z "$branch" ]]; then
+      echo "--branch requires a value" && exit 1
+    fi
+    shift 2
+    ;;
+  -*)
+    echo "unknown option: $1" && exit 1
     ;;
   *)
     host="$1"
@@ -31,7 +42,7 @@ else
 
   pacman -Sy
   pacman -S --noconfirm --needed git
-  git clone https://github.com/schnyle/arch.git "$repo_root"
+  git clone --branch="$branch" https://github.com/schnyle/arch.git "$repo_root"
 fi
 
 bash "$repo_root/run/main.sh" "$repo_root" "$host"

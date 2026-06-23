@@ -13,7 +13,6 @@
 - when moving install modules to `stages/`: decide how stages validate success. The convergence pattern reused the same idempotence check for both pre-act gate and post-act verify, which broke for destructive ops like partitioning (can't distinguish "old install with right layout" from "fresh install with right layout"). Stages are currently fire-and-forget (`partitions` just runs sfdisk and trusts the exit code) — but bigger stages may need explicit assertions (e.g., post-pacstrap check that `/mnt/usr/bin/bash` exists) rather than a generic convergence-style check.
 - add validate required vars to linting
 - explore modules declaring preconditions (yay requires user is created)
-- add --branch option to run.sh
 - update modules to check any preconditions (modules requiring running commands as user should first check that the user exists)
 
 ## atlas
