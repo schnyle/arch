@@ -13,12 +13,14 @@ disk_layout=(
 )
 
 modules=(
+  root-password
   user
   home-dirs
   networkmanager
-  yay
+  # yay
   alacritty
   arandr
+  avahi
   desk-displays
   git
   grub
@@ -36,7 +38,6 @@ modules=(
   # picom
   pulseaudio
   qutebrowser
-  root-password
   ssh-key
   time
   tmux

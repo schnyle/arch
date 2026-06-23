@@ -1,6 +1,6 @@
 # shellcheck disable=SC2034
 
-hostname="atlas$(date '+%Y%m%d')"
+hostname="atlas"
 ssh_port=2222
 system_user="atlas"
 temp_sudoersd_file="/etc/sudoers.d/temp_install"
