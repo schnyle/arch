@@ -5,7 +5,7 @@ ssh_port=2222
 system_user="atlas"
 temp_sudoersd_file="/etc/sudoers.d/temp_install"
 time_zone="/usr/share/zoneinfo/America/Denver"
-partition_layout=(
+disk_layout=(
   "512M:fat32:/boot"
   "2G:swap:swap"
   "32G:ext4:/"

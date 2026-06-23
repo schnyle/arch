@@ -1,4 +1,4 @@
-: "${partition_layout:=}"
+: "${disk_layout:=}"
 
 max_attempts=5
 
@@ -28,7 +28,7 @@ disk_is_partitioned() {
   local -a want actual
   local partition parts fstype
 
-  for partition in "${partition_layout[@]}"; do
+  for partition in "${disk_layout[@]}"; do
     IFS=":" read -ra parts <<<"$partition"
     fstype="${parts[1]}"
     want+=("$(fstype_to_guid "$fstype")")
@@ -43,7 +43,7 @@ make_partitions() {
   sgdisk -Z "$install_device"
 
   local n=1 partition size fstype end guid
-  for partition in "${partition_layout[@]}"; do
+  for partition in "${disk_layout[@]}"; do
     IFS=":" read -r size fstype _ <<<"${partition}"
     end="${size:+"+$size"}"
     guid=$(fstype_to_guid "$fstype")
@@ -57,7 +57,7 @@ make_partitions() {
 attempt=0
 until disk_is_partitioned; do
   ((attempt++ < max_attempts)) || die "failed to partition the disk after $max_attempts attempts"
-  log "writing partition layout to $install_device (attempt $attempt)"
+  log "writing disk layout to $install_device (attempt $attempt)"
   make_partitions
 done
 
@@ -76,7 +76,7 @@ filesystems_are_formatted() {
   local -a want actual
   local partition fstype
 
-  for partition in "${partition_layout[@]}"; do
+  for partition in "${disk_layout[@]}"; do
     IFS=":" read -r _ fstype _ <<<"${partition}"
     want+=("$(fstype_to_blkid "$fstype")")
   done
@@ -99,7 +99,7 @@ make_filesystem() {
 
 format_partitions() {
   local n=1 partition fstype device
-  for partition in "${partition_layout[@]}"; do
+  for partition in "${disk_layout[@]}"; do
     IFS=":" read -r _ fstype _ <<<"$partition"
     device="$install_device_prefix$n"
     make_filesystem "$device" "$fstype"
@@ -118,7 +118,7 @@ done
 
 mounts_are_active() {
   local n=1 partition mount device
-  for partition in "${partition_layout[@]}"; do
+  for partition in "${disk_layout[@]}"; do
     IFS=":" read -r _ _ mount <<<"$partition"
     device="$install_device_prefix$n"
     if [[ "$mount" == swap ]]; then
@@ -133,7 +133,7 @@ mounts_are_active() {
 mount_partitions() {
   local -a fs_mounts swaps
   local n=1 partition mount device
-  for partition in "${partition_layout[@]}"; do
+  for partition in "${disk_layout[@]}"; do
     IFS=":" read -r _ _ mount <<<"$partition"
     device="$install_device_prefix$n"
     if [[ "$mount" == swap ]]; then

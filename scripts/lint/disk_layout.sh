@@ -10,10 +10,10 @@ err() {
   fail=1
 }
 
-is_valid_partition_layout() {
+is_valid_disk_layout() {
   local -a layout=("$@") parts
   if [[ ${#layout[@]} -eq 0 ]]; then
-    err "empty partition layout"
+    err "empty disk layout string"
     return
   fi
 
@@ -45,10 +45,10 @@ is_valid_partition_layout() {
 
 repo_root=$(git rev-parse --show-toplevel)
 for host in "$repo_root"/hosts/*.sh; do
-  unset partition_layout
+  unset disk_layout
   source "$host"
-  if declare -p partition_layout &>/dev/null; then
-    is_valid_partition_layout "${partition_layout[@]}"
+  if declare -p disk_layout &>/dev/null; then
+    is_valid_disk_layout "${disk_layout[@]}"
   fi
 done
 

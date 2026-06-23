@@ -6,7 +6,7 @@ system_user="kyle"
 git_name="kyle"
 email="kylesch115@gmail.com"
 temp_sudoersd_file="/etc/sudoers.d/temp_install"
-partition_layout=(
+disk_layout=(
   "512M:fat32:/boot"
   "2G:swap:swap"
   ":ext4:/"
