@@ -36,6 +36,7 @@ modules=(
   ohmyzsh
   pavucontrol
   # picom
+  poe
   pulseaudio
   qutebrowser
   ssh-key
