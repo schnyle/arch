@@ -1,7 +1,7 @@
 # shellcheck disable=SC2034
 
 time_zone="/usr/share/zoneinfo/America/Denver"
-hostname="desk$(date '+%Y%m%d')"
+hostname="desk"
 system_user="kyle"
 git_name="kyle"
 email="kylesch115@gmail.com"

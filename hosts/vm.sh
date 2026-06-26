@@ -18,7 +18,6 @@ modules=(
   home-dirs
   networkmanager
   alacritty
-  # arandr
   avahi
   git
   grub
@@ -30,8 +29,6 @@ modules=(
   mirrors
   neovim
   ohmyzsh
-  # pavucontrol
-  # pulseaudio
   qutebrowser
   ssh-key
   time
