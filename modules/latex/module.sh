@@ -1,11 +1,14 @@
+# use `mktexlsr` to rebuild the ls-R filename database
+
 pacman_packages=(
-  texlive-latex
+  texlab
   texlive-basic
   texlive-binextra
+  texlive-latex
+  texlive-latexextra
   texlive-latexrecommended
   texlive-mathscience
-  texlive-latexextra
-  texlab
+  texlive-plaingeneric
   zathura
   zathura-pdf-mupdf
 )
