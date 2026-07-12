@@ -48,7 +48,6 @@ modules=(
 )
 
 pacman_packages=(
-  adobe-source-code-pro-fonts
   alsa-utils
   bitwarden
   cmake

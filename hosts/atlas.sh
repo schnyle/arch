@@ -2,6 +2,8 @@
 
 hostname="atlas"
 ssh_port=2222
+forgejo_ssh_port=2223
+forgejo_http_port=3000
 system_user="atlas"
 temp_sudoersd_file="/etc/sudoers.d/temp_install"
 time_zone="/usr/share/zoneinfo/America/Denver"
@@ -17,16 +19,23 @@ modules=(
   user
   home-dirs
   atlas
+  alacritty
   avahi
   fail2ban
+  forgejo
   grub
   hostname
+  i3
   localization
   mirrors
   networkmanager
+  ohmyzsh
+  qutebrowser
   sshd
   time
   ufw
+  xorg
+  zsh
 )
 
 pacman_packages=(

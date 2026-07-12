@@ -1,4 +1,6 @@
 : "${ssh_port:=}"
+: "${forgejo_ssh_port:=}"
+: "${forgejo_http_port:=}"
 
 pacman_packages=(ufw)
 
@@ -20,6 +22,18 @@ configure() {
   if ! ufw status verbose | grep -q "$ssh_port/tcp.*ALLOW"; then
     log "ufw: allowing TCP on port $ssh_port"
     ufw allow "$ssh_port/tcp"
+    changed=1
+  fi
+
+  if [[ -n $forgejo_http_port ]] && ! ufw status verbose | grep -q "$forgejo_http_port/tcp.*ALLOW"; then
+    log "ufw: allowing TCP on port $forgejo_http_port"
+    ufw allow "$forgejo_http_port/tcp"
+    changed=1
+  fi
+
+  if [[ -n $forgejo_ssh_port ]] && ! ufw status verbose | grep -q "$forgejo_ssh_port/tcp.*ALLOW"; then
+    log "ufw: allowing TCP on port $forgejo_ssh_port"
+    ufw allow "$forgejo_ssh_port/tcp"
     changed=1
   fi
 

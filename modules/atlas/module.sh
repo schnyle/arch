@@ -10,12 +10,12 @@ get_snapshot_device() {
     device="/dev/$device"
 
     if [[ ! -b "$device" ]]; then
-      echo "device '$device' not found, try again"
+      echo "device '$device' not found, try again" >&2
       continue
     fi
 
     if [[ $(lsblk -dno FSTYPE "$device") != "ext4" ]]; then
-      echo "device $device is not ext4 formatted. Select a different device, or format $device properly and restart."
+      echo "device $device is not ext4 formatted. Select a different device, or format $device properly and restart." >&2
       continue
     fi
 
@@ -38,14 +38,9 @@ configure() {
 
   for dir in "${storage_dirs[@]}"; do
     ensure_directory "/storage/$dir" || changed=1
+    ensure_file_ownership -R "$system_user:$system_user" "/storage/$dir" || changed=1
+    ensure_file_permissions 755 "/storage/$dir" || changed=1
   done
-  ensure_file_ownership -R "$system_user:$system_user" /storage || changed=1
-
-  if find /storage -type d ! -perm 755 | grep -q .; then
-    log "setting /storage dir permissions to 755"
-    find /storage -type d -exec chmod 755 {} +
-    changed=1
-  fi
 
   # /snapshots setup
   if ! grep -q " /snapshots " /etc/fstab; then
@@ -76,17 +71,12 @@ configure() {
   fi
 
   # atlas-snapshot script
-  ensure_file_ownership -R "$system_user:$system_user" /snapshots || changed=1
   ensure_file_content "$(script_dir)/atlas-snapshot" /usr/local/bin/atlas-snapshot || changed=1
   ensure_file_ownership root:root /usr/local/bin/atlas-snapshot || changed=1
   ensure_file_permissions 755 /usr/local/bin/atlas-snapshot || changed=1
 
   # atlas-snapshot service
-  local rendered
-  rendered=$(mktemp)
-  sed "s/__SYSTEM_USER__/$system_user/" "$(script_dir)/atlas-snapshot.service" >"$rendered"
-  ensure_file_content "$rendered" /etc/systemd/system/atlas-snapshot.service || changed=1
-  rm -f "$rendered"
+  ensure_file_content "$(script_dir)/atlas-snapshot.service" /etc/systemd/system/atlas-snapshot.service || changed=1
   ensure_file_ownership root:root /etc/systemd/system/atlas-snapshot.service || changed=1
   ensure_file_permissions 644 /etc/systemd/system/atlas-snapshot.service || changed=1
 

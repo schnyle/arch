@@ -6,6 +6,11 @@ now=$(date +"%Y%m%d-%H%M%S")
 new_snapshot="$snapshots_dir/$now"
 latest_snapshot="$snapshots_dir/latest"
 
+if [[ $EUID -ne 0 ]]; then
+  echo "ERROR: must be run as root" >&2
+  exit 1
+fi
+
 if ! [[ -d "$storage_dir" ]]; then
   echo "ERROR: storage directory '$storage_dir' does not exist" >&2
   exit 1
@@ -16,9 +21,20 @@ if ! [[ -d "$snapshots_dir" ]]; then
   exit 1
 fi
 
+if ! systemctl stop forgejo; then
+  echo "ERROR: failed to stop forgejo before snapshotting" >&2
+  exit 1
+fi
+
 if ! rsync -a --delete --link-dest="$latest_snapshot" "$storage_dir/" "$new_snapshot/"; then
   echo "ERROR: failed to create snapshot" >&2
   rm -rf "$new_snapshot"
+  systemctl start forgejo
+  exit 1
+fi
+
+if ! systemctl start forgejo; then
+  echo "ERROR: failed to restart forgejo after snapshotting" >&2
   exit 1
 fi
 

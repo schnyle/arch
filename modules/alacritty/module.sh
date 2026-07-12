@@ -4,6 +4,7 @@
 
 pacman_packages=(
   alacritty
+  adobe-source-code-pro-fonts
 )
 
 configure() {
