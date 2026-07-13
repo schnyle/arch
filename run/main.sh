@@ -49,3 +49,5 @@ fi
 log "done"
 
 [[ -d /run/archiso ]] && mountpoint -q /mnt && cp "$log_file" "/mnt$log_file"
+
+exit 0
