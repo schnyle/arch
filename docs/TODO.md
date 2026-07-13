@@ -3,6 +3,7 @@
 ## atlas
 
 - `atlas status` reports "In sync" when Atlas is unreachable
+- rename "snapshots" to "backups". tedious and unnecessary but preferred nomenclature
 
 ## bugs
 
@@ -17,6 +18,7 @@
 - explore modules declaring preconditions (yay requires user is created)
 - update modules to check any preconditions (modules requiring running commands as user should first check that the user exists)
 - investigate whether `ensure_service_enabled` should also start the service, useful for `run-module.sh`
+- bookmarks for `qutebrowser`
 
 ## refactor
 
