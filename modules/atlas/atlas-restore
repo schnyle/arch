@@ -1,0 +1,38 @@
+#!/usr/bin/bash
+
+storage_dir="/storage"
+snapshots_dir="/snapshots"
+latest_snapshot="$snapshots_dir/latest"
+
+if [[ $EUID -ne 0 ]]; then
+  echo "ERROR: must be run as root" >&2
+  exit 1
+fi
+
+if ! [[ -d "$storage_dir" ]]; then
+  echo "ERROR: storage directory '$storage_dir' does not exist" >&2
+  exit 1
+fi
+
+if ! [[ -d "$snapshots_dir" ]]; then
+  echo "ERROR: snapshots directory '$snapshots_dir' does not exist" >&2
+  exit 1
+fi
+
+if ! systemctl stop forgejo; then
+  echo "ERROR: failed to stop forgejo before restoring" >&2
+  exit 1
+fi
+
+if ! rsync -av "$latest_snapshot/" "$storage_dir"; then
+  echo "ERROR: failed to restore $latest_snapshot to $storage_dir" >&2
+  systemctl start forgejo
+  exit 1
+fi
+
+if ! systemctl start forgejo; then
+  echo "ERROR: failed to restart forgejo after restoring" >&2
+  exit 1
+fi
+
+echo "restored $latest_snapshot to $storage_dir"

@@ -85,6 +85,11 @@ configure() {
   ensure_file_ownership root:root /etc/systemd/system/atlas-snapshot.timer || changed=1
   ensure_file_permissions 644 /etc/systemd/system/atlas-snapshot.timer || changed=1
 
+  # atlas-restore script
+  ensure_file_content "$(script_dir)/atlas-restore" /usr/local/bin/atlas-restore || changed=1
+  ensure_file_ownership root:root /usr/local/bin/atlas-restore || changed=1
+  ensure_file_permissions 755 /usr/local/bin/atlas-restore || changed=1
+
   [[ $changed -eq 1 ]] && systemctl daemon-reload
   ensure_service_enabled atlas-snapshot.timer || changed=1
 
