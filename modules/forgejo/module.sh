@@ -111,7 +111,7 @@ configure() {
 
   sudo -u forgejo forgejo migrate -c "$forgejo_ini"
 
-  local admin_username=kyle
+  local admin_username=schnyle
   local admin_email=kylesch115@gmail.com
 
   if ! sudo -u forgejo forgejo admin user list -c "$forgejo_ini" | grep -qw "$admin_username"; then
