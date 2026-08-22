@@ -28,8 +28,16 @@ bootloader_remove_orphaned_entries() {
 configure() {
   local changed=0
   local grub_bootloader_exists
+  local grub_default_changed=0
 
   bootloader_remove_orphaned_entries || changed=1
+
+  if ! grep -q "^GRUB_DISABLE_OS_PROBER=false" /etc/default/grub; then
+    log "enabling os-prober in GRUB config"
+    sed -i 's/^#GRUB_DISABLE_OS_PROBER=false/GRUB_DISABLE_OS_PROBER=false/' /etc/default/grub
+    grub_default_changed=1
+    changed=1
+  fi
 
   efibootmgr -v | grep -q "grubx64.efi"
   grub_bootloader_exists=$?
@@ -40,7 +48,7 @@ configure() {
     changed=1
   fi
 
-  if [[ $grub_bootloader_exists -ne 0 ]] && [[ ! -f /boot/grub/grub.cfg ]]; then
+  if [[ $grub_default_changed -eq 1 ]] || { [[ $grub_bootloader_exists -ne 0 ]] && [[ ! -f /boot/grub/grub.cfg ]]; }; then
     log "configuring GRUB bootloader"
     grub-mkconfig -o /boot/grub/grub.cfg
     changed=1
