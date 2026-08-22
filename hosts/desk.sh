@@ -17,7 +17,7 @@ modules=(
   user
   home-dirs
   networkmanager
-  # yay
+  yay
   alacritty
   arandr
   avahi
@@ -32,17 +32,17 @@ modules=(
   minesweeper
   mirrors
   neovim
-  # nvidia
+  nvidia
   ohmyzsh
   pavucontrol
-  # picom
+  picom
   poe
   pulseaudio
   qutebrowser
   ssh-key
   time
   tmux
-  # virtualization
+  virtualization
   xorg
   zsh
 )

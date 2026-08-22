@@ -44,7 +44,7 @@ exec --no-startup-id picom -b
 # X server settings
 exec --no-startup-id xset -dpms                # disable display power management (no monitor sleep)
 exec --no-startup-id xset s off                # disable screensaver
-exec_always --no-startup-id xset r rate 250 40 # xset r rate <delay_ms> <rate_per_sec>
+exec_always --no-startup-id xset r rate 200 60 # xset r rate <delay_ms> <rate_per_sec>
 
 # Use pactl to adjust volume in PulseAudio.
 set $refresh_i3status killall -SIGUSR1 i3status
