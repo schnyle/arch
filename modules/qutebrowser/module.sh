@@ -6,5 +6,5 @@ pacman_packages=(
 
 configure() {
   ensure_dotfile "$(script_dir)/config.py" "/home/$system_user/.config/qutebrowser/config.py"
-  ensure_dotfile "$(script_dir)/config.py" "/home/$system_user/.config/qutebrowser/bookmarks/urls"
+  ensure_dotfile "$(script_dir)/urls" "/home/$system_user/.config/qutebrowser/bookmarks/urls"
 }
