@@ -1,4 +1,5 @@
 : "${modules:=}"
+: "${system_user:=}"
 : "${temp_sudoersd_file:=}"
 
 host="$1"
@@ -18,6 +19,10 @@ if [[ ${#modules[@]} -gt 0 || ${#pacman_packages[@]} -gt 0 ]]; then
 else
   log "nothing to do, skipping"
 fi
+
+# repo is cloned as root; hand it to system_user so symlinked dotfiles
+# (see ensure_dotfile) are editable without sudo
+ensure_file_ownership -R "$system_user:$system_user" "$repo_root"
 
 # remove the temporary passwordless sudo entry set up by the user module
 [[ -f "$temp_sudoersd_file" ]] && rm -f "$temp_sudoersd_file"

@@ -18,10 +18,10 @@
 - explore modules declaring preconditions (yay requires user is created)
 - update modules to check any preconditions (modules requiring running commands as user should first check that the user exists)
 - investigate whether `ensure_service_enabled` should also start the service, useful for `run-module.sh`
-- bookmarks for `qutebrowser`
 
 ## refactor
 
+- `run/converge.sh` chowns all of `$repo_root` (`/arch-install`) to `system_user` so symlinked dotfiles (`ensure_dotfile`) are editable without sudo — but this leaves a non-root-owned directory sitting directly under `/`, which breaks the convention that only `/home` (and transient dirs like `/run/media/$USER`) hold user-owned paths, and root owns everything else at that level. Proper fix: relocate the repo under `/home/$system_user/...` once the user module has run (it can't live there from the start — during the live-ISO bootstrap phase, `$system_user` doesn't exist yet, so `repo_root` needs a location outside `/home` to begin with). Relocating is a real `cp -a`+`rm -rf`, not a rename, if `/home` is a separate mount/subvolume, and `repo_root` would need to stop being hardcoded (`install.sh`'s `/arch-install`) so callers resolve wherever the repo currently lives.
 - dedupe `storage_dirs`/`home_dirs` list between `home-dirs` and `atlas-storage-dirs` modules (currently the same set is hardcoded in both)
 - consider making `constants` file for things like `time_zone` used in multiple hosts
 - refactor `ufw` to take a `firewall_ports` array per-module (mirroring the `pacman_packages` aggregation in `lib/packages.sh`/`get_pacman_packages`) instead of hardcoding `forgejo_ssh_port`/`forgejo_http_port` directly in the ufw module — deferred since ufw is only used on atlas today; revisit once a second host needs ufw, to keep module isolation intact
