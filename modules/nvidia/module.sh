@@ -1,6 +1,6 @@
 pacman_packages=(
   linux-headers
-  nvidia-dkms
+  nvidia-open-dkms
   nvidia-utils
   nvidia-settings
 )
