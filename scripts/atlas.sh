@@ -7,7 +7,7 @@ config_file="$HOME/.config/atlas.conf"
 default_config=$(
   cat <<"EOF"
 # Atlas config
-host=192.168.122.74
+host=atlas.local
 remote_user=atlas
 port=2222
 remote_storage_dir=/storage
