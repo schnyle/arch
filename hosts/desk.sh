@@ -40,6 +40,7 @@ modules=(
   pulseaudio
   qutebrowser
   ssh-key
+  steam
   time
   tmux
   virtualization
