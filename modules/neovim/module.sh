@@ -7,5 +7,5 @@ pacman_packages=(
 )
 
 configure() {
-  ensure_dotfile "$(script_dir)/init.lua" "/home/$system_user/.config/nvim/init.lua"
+  ensure_symlink -u "$system_user" "$(script_dir)/nvim" "/home/$system_user/.config/nvim"
 }

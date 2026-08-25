@@ -1,10 +1,8 @@
-# alacritty is installed and dotfile
-
 : "${system_user:=}"
 
 pacman_packages=(
   alacritty
-  adobe-source-code-pro-fonts
+  ttf-jetbrains-mono-nerd
 )
 
 configure() {

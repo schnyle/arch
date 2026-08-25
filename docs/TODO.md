@@ -21,8 +21,21 @@
 
 ## refactor
 
+- add `ensure_dotdir` analogue to `ensure_dotfile` that mirrors a whole directory into `~/.dotfiles/<module>/` — needed once any module symlinks a directory (e.g. neovim's `nvim/`) rather than individual files, since the current `ensure_dotfile` staging copy is skipped when calling `ensure_symlink` directly
+
 - `run/converge.sh` chowns all of `$repo_root` (`/arch-install`) to `system_user` so symlinked dotfiles (`ensure_dotfile`) are editable without sudo — but this leaves a non-root-owned directory sitting directly under `/`, which breaks the convention that only `/home` (and transient dirs like `/run/media/$USER`) hold user-owned paths, and root owns everything else at that level. Proper fix: relocate the repo under `/home/$system_user/...` once the user module has run (it can't live there from the start — during the live-ISO bootstrap phase, `$system_user` doesn't exist yet, so `repo_root` needs a location outside `/home` to begin with). Relocating is a real `cp -a`+`rm -rf`, not a rename, if `/home` is a separate mount/subvolume, and `repo_root` would need to stop being hardcoded (`install.sh`'s `/arch-install`) so callers resolve wherever the repo currently lives.
 - dedupe `storage_dirs`/`home_dirs` list between `home-dirs` and `atlas-storage-dirs` modules (currently the same set is hardcoded in both)
 - consider making `constants` file for things like `time_zone` used in multiple hosts
 - refactor `ufw` to take a `firewall_ports` array per-module (mirroring the `pacman_packages` aggregation in `lib/packages.sh`/`get_pacman_packages`) instead of hardcoding `forgejo_ssh_port`/`forgejo_http_port` directly in the ufw module — deferred since ufw is only used on atlas today; revisit once a second host needs ufw, to keep module isolation intact
 - forgejo module pins the `forgejo` user/group UID/GID, but package-created paths (tmpfiles.d dirs like `/var/log/forgejo`, `/etc/forgejo`) retain stale ownership from the original dynamic UID and need individual `ensure_file_ownership` fixes as they're discovered (found `/etc/forgejo` and `/var/log/forgejo` so far). Consider re-running `systemd-tmpfiles --create` for forgejo's rules after the pin instead of whack-a-moling each path
+
+## debt
+
+**nerd fonts (neovim)**: add `ttf-jetbrains-mono-nerd` for nerd fonts, and add below to alacritty
+```
+[font]
+  normal = { family = "JetBrainsMono Nerd Font", style = "Regular" }
+  bold = { family = "JetBrainsMono Nerd Font", style = "Bold" }
+  italic = { family = "JetBrainsMono Nerd Font", style = "Italic" }
+```
+design question: should these both be in alarcitty? its for neovim...
